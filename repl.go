@@ -5,6 +5,9 @@ import (
 	"strings"
 	"bufio"
 	"os"
+	"net/http"
+	"io"
+	"encoding/json"
 )
 
 type cliCommand struct {
@@ -18,11 +21,24 @@ type config struct {
 	Next *string
 }
 
+type locationAreaResp struct {
+	Next *string `json:"next"`
+	Previous *string `json:"previous"`
+	Results []struct {
+		Name string `json:"name"`
+	} `json:"results"`
+}
+
 var commands = map[string]cliCommand {
 	"help": {
 		name: "help",
 		description: "Displays a help message",
 		callback: commandHelp,
+	},
+	"map": {
+		name: "map",
+		description: "Get a list of location areas",
+		callback: commandMap,
 	},
 	"exit": {
 		name: "exit",
@@ -58,6 +74,40 @@ func startRepl() {
 
 func commandHelp(cfg *config) error {
 	fmt.Println("Welcome to the Pokedex!\nUsage:\n\nhelp: Displays a help message\nexit: Exit the Pokedex")
+	return nil
+}
+
+func commandMap(cfg *config) error {
+	var url string
+	if cfg.Next == nil {
+		url = "https://pokeapi.co/api/v2/location-area/" 
+	} else {
+		url = *cfg.Next
+	}
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+
+	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	var result locationAreaResp
+	err = json.Unmarshal(b, &result)
+	if err != nil {
+		return err
+	}
+
+	for _, r := range result.Results {
+		fmt.Println(r.Name)
+	}
+
+	cfg.Next = result.Next
+	cfg.Previous = result.Previous
+
 	return nil
 }
 
