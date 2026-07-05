@@ -40,6 +40,11 @@ var commands = map[string]cliCommand {
 		description: "Get a list of location areas",
 		callback: commandMap,
 	},
+	"mapb": {
+		name: "mapb",
+		description: "Get a list of the previous location areas",
+		callback: commandMapB,
+	},
 	"exit": {
 		name: "exit",
 		description: "Exit the Pokedex",
@@ -83,6 +88,41 @@ func commandMap(cfg *config) error {
 		url = "https://pokeapi.co/api/v2/location-area/" 
 	} else {
 		url = *cfg.Next
+	}
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+
+	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	var result locationAreaResp
+	err = json.Unmarshal(b, &result)
+	if err != nil {
+		return err
+	}
+
+	for _, r := range result.Results {
+		fmt.Println(r.Name)
+	}
+
+	cfg.Next = result.Next
+	cfg.Previous = result.Previous
+
+	return nil
+}
+
+func commandMapB(cfg *config) error {
+	var url string
+	if cfg.Previous == nil {
+		fmt.Println("you're on the first page")
+		return nil
+	} else {
+		url = *cfg.Previous
 	}
 
 	resp, err := http.Get(url)
