@@ -15,7 +15,7 @@ import (
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*config) error
+	callback    func(*config, []string) error
 }
 
 type config struct {
@@ -72,7 +72,7 @@ func startRepl() {
 
 		command, exists := commands[userInput[0]]
 		if exists {
-			err := command.callback(cfg)
+			err := command.callback(cfg, userInput[1:])
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -82,12 +82,12 @@ func startRepl() {
 	}
 }
 
-func commandHelp(cfg *config) error {
+func commandHelp(cfg *config, args []string) error {
 	fmt.Println("Welcome to the Pokedex!\nUsage:\n\nhelp: Displays a help message\nexit: Exit the Pokedex")
 	return nil
 }
 
-func commandMap(cfg *config) error {
+func commandMap(cfg *config, args []string) error {
 	var url string
 	if cfg.Next == nil {
 		url = "https://pokeapi.co/api/v2/location-area/" 
@@ -126,7 +126,7 @@ func commandMap(cfg *config) error {
 	return nil
 }
 
-func commandMapB(cfg *config) error {
+func commandMapB(cfg *config, args []string) error {
 	var url string
 	if cfg.Previous == nil {
 		fmt.Println("you're on the first page")
@@ -166,7 +166,7 @@ func commandMapB(cfg *config) error {
 	return nil
 }
 
-func commandExit(cfg *config) error {
+func commandExit(cfg *config, args []string) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
