@@ -32,6 +32,14 @@ type locationAreaResp struct {
 	} `json:"results"`
 }
 
+type locationAreaDetailResp struct {
+	PokemonEncounters []struct {
+		Pokemon struct {
+			Name string `json:"name"`
+		} `json:"pokemon"`
+	} `json:"pokemon_encounters"`
+}
+
 var commands = map[string]cliCommand {
 	"help": {
 		name: "help",
@@ -47,6 +55,11 @@ var commands = map[string]cliCommand {
 		name: "mapb",
 		description: "Get a list of the previous location areas",
 		callback: commandMapB,
+	},
+	"explore": {
+		name: "explore",
+		description: "Get a list of the pokemon in this location area",
+		callback: commandExplore,
 	},
 	"exit": {
 		name: "exit",
@@ -162,6 +175,43 @@ func commandMapB(cfg *config, args []string) error {
 
 	cfg.Next = result.Next
 	cfg.Previous = result.Previous
+
+	return nil
+}
+
+func commandExplore(cfg *config, args []string) error {
+	if len(args) == 0 {
+		fmt.Println("no area provided")
+		return nil
+	}
+
+	base_url := "https://pokeapi.co/api/v2/location-area/"
+	area_url := base_url + args[0]
+
+	b, ok := cfg.Cache.Get(area_url)
+	if !ok {
+		resp, err := http.Get(area_url)
+		if err != nil {
+			return err
+		}
+
+		defer resp.Body.Close()
+		b, err = io.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+		cfg.Cache.Add(area_url, b)
+	}
+
+	var result locationAreaDetailResp
+	err := json.Unmarshal(b, &result)
+	if err != nil {
+		return err
+	}
+
+	for _, r := range result.PokemonEncounters {
+		fmt.Println(r.Pokemon.Name)
+	}
 
 	return nil
 }
