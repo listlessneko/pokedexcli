@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"io"
 	"encoding/json"
+	"time"
+	"github.com/listlessneko/pokedexcli/internal/pokecache"
 )
 
 type cliCommand struct {
@@ -19,6 +21,7 @@ type cliCommand struct {
 type config struct {
 	Previous *string
 	Next *string
+	Cache *pokecache.Cache
 }
 
 type locationAreaResp struct {
@@ -55,7 +58,9 @@ var commands = map[string]cliCommand {
 func startRepl() {
 	scanner := bufio.NewScanner(os.Stdin)
 
-	cfg := &config{}
+	cfg := &config{
+		Cache: pokecache.NewCache(5 * time.Second),
+	}
 
 	for {
 		fmt.Print("Pokedex > ")
