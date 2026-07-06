@@ -9,6 +9,7 @@ import (
 	"io"
 	"encoding/json"
 	"time"
+	"math/rand"
 	"github.com/listlessneko/pokedexcli/internal/pokecache"
 )
 
@@ -22,6 +23,7 @@ type config struct {
 	Previous *string
 	Next *string
 	Cache *pokecache.Cache
+	Caught map[string]Pokemon
 }
 
 type locationAreaResp struct {
@@ -38,6 +40,11 @@ type locationAreaDetailResp struct {
 			Name string `json:"name"`
 		} `json:"pokemon"`
 	} `json:"pokemon_encounters"`
+}
+
+type Pokemon struct {
+	Name string `json:"name"`
+	BaseExperience int `json:"base_experience"`
 }
 
 var commands = map[string]cliCommand {
@@ -61,6 +68,11 @@ var commands = map[string]cliCommand {
 		description: "Get a list of the pokemon in this location area",
 		callback: commandExplore,
 	},
+	"catch": {
+		name: "catch",
+		description: "Try to catch a pokemon",
+		callback: commandCatch,
+	},
 	"exit": {
 		name: "exit",
 		description: "Exit the Pokedex",
@@ -73,6 +85,7 @@ func startRepl() {
 
 	cfg := &config{
 		Cache: pokecache.NewCache(5 * time.Second),
+		Caught: make(map[string]Pokemon),
 	}
 
 	for {
@@ -211,6 +224,46 @@ func commandExplore(cfg *config, args []string) error {
 
 	for _, r := range result.PokemonEncounters {
 		fmt.Println(r.Pokemon.Name)
+	}
+
+	return nil
+}
+
+func commandCatch(cfg *config, args []string) error {
+	if len(args) == 0 {
+		fmt.Println("no pokemon provided")
+		return nil
+	}
+
+	url := fmt.Sprintf("https://pokeapi.co/api/v2/pokemon/%s", args[0])
+
+	b, ok := cfg.Cache.Get(url)
+	if !ok {
+		resp, err := http.Get(url)
+		if err != nil {
+			return err
+		}
+
+		defer resp.Body.Close()
+		b, err = io.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+		cfg.Cache.Add(url, b)
+	}
+
+	var result Pokemon
+	err := json.Unmarshal(b, &result)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Throwing a Pokeball at %s...\n", result.Name)
+	if rand.Intn(result.BaseExperience) < 50 {
+		cfg.Caught[result.Name] = result
+		fmt.Printf("You caught %s!\n", result.Name)
+	} else {
+		fmt.Printf("%s ran away...\n", result.Name)
 	}
 
 	return nil
