@@ -45,6 +45,23 @@ type locationAreaDetailResp struct {
 type Pokemon struct {
 	Name string `json:"name"`
 	BaseExperience int `json:"base_experience"`
+	Height int `json:"height"`
+	Weight int `json:"weight"`
+	Stats []struct {
+		BaseStat int `json:"base_stat"`
+		Effort int `json:"effort"`
+		Stat struct {
+			Name string `json:"name"`
+			URL string `json:"url"`
+		} `json:"stat"`
+	} `json:"stats"`
+	Types []struct {
+		Slot int `json:"slot"`
+		Type struct {
+			Name string `json:"name"`
+			URL string `json:"url"`
+		} `json:"type"`
+	} `json:"types"`
 }
 
 var commands = map[string]cliCommand {
@@ -72,6 +89,11 @@ var commands = map[string]cliCommand {
 		name: "catch",
 		description: "Try to catch a pokemon",
 		callback: commandCatch,
+	},
+	"inspect": {
+		name: "inspect",
+		description: "View a pokemon's stats",
+		callback: commandInspect,
 	},
 	"exit": {
 		name: "exit",
@@ -262,10 +284,40 @@ func commandCatch(cfg *config, args []string) error {
 	if rand.Intn(result.BaseExperience) < 50 {
 		cfg.Caught[result.Name] = result
 		fmt.Printf("You caught %s!\n", result.Name)
+		fmt.Println("You man now inspect it with the inspect command.")
 	} else {
 		fmt.Printf("%s ran away...\n", result.Name)
 	}
 
+	return nil
+}
+
+func commandInspect(cfg *config, args []string) error {
+	if len(args) == 0 {
+		fmt.Println("no pokemon provided")
+		return nil
+	}
+
+	pokemon, ok := cfg.Caught[args[0]]
+	if !ok {
+		fmt.Println("you have not caught that pokemon")
+		return nil
+	}
+
+	fmt.Printf("Name: %s\n", pokemon.Name)
+	fmt.Printf("Height: %d\n", pokemon.Height)
+	fmt.Printf("Weight: %d\n", pokemon.Weight)
+
+	fmt.Println("Stats:")
+	for _, s := range pokemon.Stats {
+		fmt.Printf("- %s: %d\n", s.Stat.Name, s.BaseStat)
+	}
+
+	fmt.Println("Types:")
+	for _, t := range pokemon.Types {
+		fmt.Printf("- %s\n", t.Type.Name)
+	}
+	
 	return nil
 }
 
