@@ -16,7 +16,7 @@ import (
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*config, []string) error
+	callback    func(*config, io.Writer, []string) error
 }
 
 type config struct {
@@ -125,7 +125,7 @@ func startRepl() {
 
 		command, exists := commands[userInput[0]]
 		if exists {
-			err := command.callback(cfg, userInput[1:])
+			err := command.callback(cfg, os.Stdout, userInput[1:])
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -135,12 +135,12 @@ func startRepl() {
 	}
 }
 
-func commandHelp(cfg *config, args []string) error {
-	fmt.Println("Welcome to the Pokedex!\nUsage:\n\nhelp: Displays a help message\nexit: Exit the Pokedex")
+func commandHelp(cfg *config, writer io.Writer, args []string) error {
+	fmt.Fprintln(writer, "Welcome to the Pokedex!\nUsage:\n\nhelp: Displays a help message\nexit: Exit the Pokedex")
 	return nil
 }
 
-func commandMap(cfg *config, args []string) error {
+func commandMap(cfg *config, writer io.Writer, args []string) error {
 	var url string
 	if cfg.Next == nil {
 		url = "https://pokeapi.co/api/v2/location-area/" 
@@ -170,7 +170,7 @@ func commandMap(cfg *config, args []string) error {
 	}
 
 	for _, r := range result.Results {
-		fmt.Println(r.Name)
+		fmt.Fprintln(writer, r.Name)
 	}
 
 	cfg.Next = result.Next
@@ -179,10 +179,10 @@ func commandMap(cfg *config, args []string) error {
 	return nil
 }
 
-func commandMapB(cfg *config, args []string) error {
+func commandMapB(cfg *config, writer io.Writer, args []string) error {
 	var url string
 	if cfg.Previous == nil {
-		fmt.Println("you're on the first page")
+		fmt.Fprintln(writer, "you're on the first page")
 		return nil
 	} else {
 		url = *cfg.Previous
@@ -210,7 +210,7 @@ func commandMapB(cfg *config, args []string) error {
 	}
 
 	for _, r := range result.Results {
-		fmt.Println(r.Name)
+		fmt.Fprintln(writer, r.Name)
 	}
 
 	cfg.Next = result.Next
@@ -219,9 +219,9 @@ func commandMapB(cfg *config, args []string) error {
 	return nil
 }
 
-func commandExplore(cfg *config, args []string) error {
+func commandExplore(cfg *config, writer io.Writer, args []string) error {
 	if len(args) == 0 {
-		fmt.Println("no area provided")
+		fmt.Fprintln(writer, "no area provided")
 		return nil
 	}
 
@@ -250,15 +250,15 @@ func commandExplore(cfg *config, args []string) error {
 	}
 
 	for _, r := range result.PokemonEncounters {
-		fmt.Println(r.Pokemon.Name)
+		fmt.Fprintln(writer, r.Pokemon.Name)
 	}
 
 	return nil
 }
 
-func commandCatch(cfg *config, args []string) error {
+func commandCatch(cfg *config, writer io.Writer, args []string) error {
 	if len(args) == 0 {
-		fmt.Println("no pokemon provided")
+		fmt.Fprintln(writer, "no pokemon provided")
 		return nil
 	}
 
@@ -285,57 +285,57 @@ func commandCatch(cfg *config, args []string) error {
 		return err
 	}
 
-	fmt.Printf("Throwing a Pokeball at %s...\n", result.Name)
+	fmt.Fprintf(writer, "Throwing a Pokeball at %s...\n", result.Name)
 	if rand.Intn(result.BaseExperience) < 50 {
 		cfg.Caught[result.Name] = result
-		fmt.Printf("You caught %s!\n", result.Name)
-		fmt.Println("You man now inspect it with the inspect command.")
+		fmt.Fprintf(writer, "You caught %s!\n", result.Name)
+		fmt.Fprintln(writer, "You man now inspect it with the inspect command.")
 	} else {
-		fmt.Printf("%s ran away...\n", result.Name)
+		fmt.Fprintf(writer, "%s ran away...\n", result.Name)
 	}
 
 	return nil
 }
 
-func commandInspect(cfg *config, args []string) error {
+func commandInspect(cfg *config, writer io.Writer, args []string) error {
 	if len(args) == 0 {
-		fmt.Println("no pokemon provided")
+		fmt.Fprintln(writer, "no pokemon provided")
 		return nil
 	}
 
 	pokemon, ok := cfg.Caught[args[0]]
 	if !ok {
-		fmt.Println("you have not caught that pokemon")
+		fmt.Fprintln(writer, "you have not caught that pokemon")
 		return nil
 	}
 
-	fmt.Printf("Name: %s\n", pokemon.Name)
-	fmt.Printf("Height: %d\n", pokemon.Height)
-	fmt.Printf("Weight: %d\n", pokemon.Weight)
+	fmt.Fprintf(writer, "Name: %s\n", pokemon.Name)
+	fmt.Fprintf(writer, "Height: %d\n", pokemon.Height)
+	fmt.Fprintf(writer, "Weight: %d\n", pokemon.Weight)
 
-	fmt.Println("Stats:")
+	fmt.Fprintln(writer, "Stats:")
 	for _, s := range pokemon.Stats {
-		fmt.Printf("- %s: %d\n", s.Stat.Name, s.BaseStat)
+		fmt.Fprintf(writer, "- %s: %d\n", s.Stat.Name, s.BaseStat)
 	}
 
-	fmt.Println("Types:")
+	fmt.Fprintln(writer, "Types:")
 	for _, t := range pokemon.Types {
-		fmt.Printf("- %s\n", t.Type.Name)
+		fmt.Fprintf(writer, "- %s\n", t.Type.Name)
 	}
 	
 	return nil
 }
 
-func commandPokedex(cfg *config, args []string) error {
-	fmt.Println("Your Pokedex:")
+func commandPokedex(cfg *config, writer io.Writer, args []string) error {
+	fmt.Fprintln(writer, "Your Pokedex:")
 	for _, p := range cfg.Caught {
-		fmt.Printf("- %s\n", p.Name)
+		fmt.Fprintf(writer, "- %s\n", p.Name)
 	}
 	return nil
 }
 
-func commandExit(cfg *config, args []string) error {
-	fmt.Println("Closing the Pokedex... Goodbye!")
+func commandExit(cfg *config, writer io.Writer, args []string) error {
+	fmt.Fprintln(writer, "Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
