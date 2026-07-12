@@ -37,80 +37,98 @@ func TestCleanInput(t *testing.T) {
 }
 
 func TestCommandInspect(t *testing.T) {
-	cfg := &config {
-		Caught: map[string]Pokemon {
-			"lotad": Pokemon {
-				Name: "lotad",
-				Height: 5,
-				Weight: 26,
-				Stats: []PokemonStats {
-					{
-						BaseStat: 40,
-						Stat: NamedAPIResource {
-							Name: "hp",
+	cases := []struct {
+		input string
+		caught map[string]Pokemon
+		expected string
+	}{
+		{
+			input: "lotad",
+			caught: map[string]Pokemon {
+				"lotad": Pokemon {
+					Name: "lotad",
+					Height: 5,
+					Weight: 26,
+					Stats: []PokemonStats {
+						{
+							BaseStat: 40,
+							Stat: NamedAPIResource {
+								Name: "hp",
+							},
+						},
+					},
+					Types: []PokemonTypes {
+						{
+							Type: NamedAPIResource {
+								Name: "water",
+							},
 						},
 					},
 				},
-				Types: []PokemonTypes {
-					{
-						Type: NamedAPIResource {
-							Name: "water",
-						},
-					},
-				},
 			},
+			expected: "Name: lotad\nHeight: 5\nWeight: 26\nStats:\n- hp: 40\nTypes:\n- water\n",
 		},
 	}
 
-	var buf bytes.Buffer
-	err := commandInspect(cfg, &buf, []string{"lotad"})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	for _, c := range cases {
+		cfg := &config{Caught: c.caught}
 
-	expected := "Name: lotad\nHeight: 5\nWeight: 26\nStats:\n- hp: 40\nTypes:\n- water\n"
+		var buf bytes.Buffer
+		err := commandInspect(cfg, &buf, []string{c.input})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 
-	if buf.String() != expected {
-		t.Errorf("received %q, expected %q", buf.String(), expected)
-	}
-}
-
-func TestCommandPokedex(t *testing.T) {
-	cfg := &config {
-		Caught: map[string]Pokemon {
-			"lotad": Pokemon {
-				Name: "lotad",
-			},
-			"cyndaquil": Pokemon {
-				Name: "cyndaquil",
-			},
-			"lugia": Pokemon {
-				Name: "lugia",
-			},
-		},
-	}
-
-	expected := []string{"- cyndaquil", "- lotad", "- lugia"}
-
-	var buf bytes.Buffer
-	err := commandPokedex(cfg, &buf, []string{""})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	lines := strings.Split(strings.TrimSpace(buf.String()), "\n")
-	caughtPokemon := lines[1:]
-	sort.Strings(caughtPokemon)
-
-	if len(caughtPokemon) != len(expected) {
-			t.Errorf("actual length (%d) does not match expected length (%d)", len(caughtPokemon), len(expected))
-	} else {
-		for i, p := range caughtPokemon {
-			if p != expected[i] {
-				t.Errorf("received %v, expected %v", p, expected[i])
-			}
+		if buf.String() != c.expected {
+			t.Errorf("received %q, expected %q", buf.String(), c.expected)
 		}
 	}
 
+}
+
+func TestCommandPokedex(t *testing.T) {
+	cases := []struct {
+		caught map[string]Pokemon
+		expected []string
+	}{
+		{
+			caught: map[string]Pokemon {
+				"lotad": Pokemon {
+					Name: "lotad",
+				},
+				"cyndaquil": Pokemon {
+					Name: "cyndaquil",
+				},
+				"lugia": Pokemon {
+					Name: "lugia",
+				},
+			},
+			expected: []string{"- cyndaquil", "- lotad", "- lugia"},
+		},
+	}
+
+	for _, c := range cases {
+		cfg := &config {Caught: c.caught}
+
+		var buf bytes.Buffer
+		err := commandPokedex(cfg, &buf, []string{""})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		lines := strings.Split(strings.TrimSpace(buf.String()), "\n")
+		caughtPokemon := lines[1:]
+		sort.Strings(caughtPokemon)
+
+		if len(caughtPokemon) != len(c.expected) {
+			t.Errorf("actual length (%d) does not match expected length (%d)", len(caughtPokemon), len(c.expected))
+		} else {
+			for i, p := range caughtPokemon {
+				if p != c.expected[i] {
+					t.Errorf("received %v, expected %v", p, c.expected[i])
+				}
+			}
+		}
+	}
 }
 
