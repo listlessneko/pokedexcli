@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"testing"
+	"bytes"
+)
 
 func TestCleanInput(t *testing.T) {
 	cases := []struct {
@@ -30,3 +33,43 @@ func TestCleanInput(t *testing.T) {
 		}
 	}
 }
+
+func TestCommandInspect(t *testing.T) {
+	cfg := &config {
+		Caught: map[string]Pokemon {
+			"lotad": Pokemon {
+				Name: "lotad",
+				Height: 5,
+				Weight: 26,
+				Stats: []PokemonStats {
+					{
+						BaseStat: 40,
+						Stat: NamedAPIResource {
+							Name: "hp",
+						},
+					},
+				},
+				Types: []PokemonTypes {
+					{
+						Type: NamedAPIResource {
+							Name: "water",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	var buf bytes.Buffer
+	err := commandInspect(cfg, &buf, []string{"lotad"})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	expected := "Name: lotad\nHeight: 5\nWeight: 26\nStats:\n- hp: 40\nTypes:\n- water\n"
+
+	if buf.String() != expected {
+		t.Errorf("received %q, expected %q", buf.String(), expected)
+	}
+}
+
