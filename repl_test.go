@@ -3,6 +3,8 @@ package main
 import (
 	"testing"
 	"bytes"
+	"sort"
+	"strings"
 )
 
 func TestCleanInput(t *testing.T) {
@@ -71,5 +73,44 @@ func TestCommandInspect(t *testing.T) {
 	if buf.String() != expected {
 		t.Errorf("received %q, expected %q", buf.String(), expected)
 	}
+}
+
+func TestCommandPokedex(t *testing.T) {
+	cfg := &config {
+		Caught: map[string]Pokemon {
+			"lotad": Pokemon {
+				Name: "lotad",
+			},
+			"cyndaquil": Pokemon {
+				Name: "cyndaquil",
+			},
+			"lugia": Pokemon {
+				Name: "lugia",
+			},
+		},
+	}
+
+	expected := []string{"- cyndaquil", "- lotad", "- lugia"}
+
+	var buf bytes.Buffer
+	err := commandPokedex(cfg, &buf, []string{""})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	lines := strings.Split(strings.TrimSpace(buf.String()), "\n")
+	caughtPokemon := lines[1:]
+	sort.Strings(caughtPokemon)
+
+	if len(caughtPokemon) != len(expected) {
+			t.Errorf("actual length (%d) does not match expected length (%d)", len(caughtPokemon), len(expected))
+	} else {
+		for i, p := range caughtPokemon {
+			if p != expected[i] {
+				t.Errorf("received %v, expected %v", p, expected[i])
+			}
+		}
+	}
+
 }
 
