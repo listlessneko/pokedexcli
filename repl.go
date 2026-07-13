@@ -267,7 +267,7 @@ func commandExplore(cfg *config, writer io.Writer, args []string) error {
 	}
 
 	for _, r := range location.PokemonEncounters {
-		fmt.Fprintln(writer, r.Pokemon.Name)
+		fmt.Fprintln(writer, capitalize(r.Pokemon.Name))
 	}
 
 	return nil
@@ -302,13 +302,16 @@ func commandCatch(cfg *config, writer io.Writer, args []string) error {
 		return err
 	}
 
-	fmt.Fprintf(writer, "Throwing a Pokeball at %s...\n", (pokemon.Name))
-	if rand.Intn(pokemon.BaseExperience) < 50 {
+	pokemonName := capitalize(pokemon.Name)
+	chance := rand.Intn(pokemon.BaseExperience)
+
+	fmt.Fprintf(writer, "Throwing a Pokeball at %s...\n", pokemonName)
+	if chance < 50 {
 		cfg.Caught[pokemon.Name] = pokemon
-		fmt.Fprintf(writer, "You caught %s!\n", pokemon.Name)
+		fmt.Fprintf(writer, "You caught %s!\n", pokemonName)
 		fmt.Fprintln(writer, "You man now inspect it with the inspect command.")
 	} else {
-		fmt.Fprintf(writer, "%s ran away...\n", pokemon.Name)
+		fmt.Fprintf(writer, "%s ran away...\n", pokemonName)
 	}
 
 	return nil
@@ -326,7 +329,7 @@ func commandInspect(cfg *config, writer io.Writer, args []string) error {
 		return nil
 	}
 
-	fmt.Fprintf(writer, "Name: %s\n", pokemon.Name)
+	fmt.Fprintf(writer, "Name: %s\n", capitalize(pokemon.Name))
 	fmt.Fprintf(writer, "Height: %d\n", pokemon.Height)
 	fmt.Fprintf(writer, "Weight: %d\n", pokemon.Weight)
 
@@ -337,7 +340,7 @@ func commandInspect(cfg *config, writer io.Writer, args []string) error {
 
 	fmt.Fprintln(writer, "Types:")
 	for _, t := range pokemon.Types {
-		fmt.Fprintf(writer, "- %s\n", t.Type.Name)
+		fmt.Fprintf(writer, "- %s\n", capitalize(t.Type.Name))
 	}
 	
 	return nil
@@ -352,7 +355,7 @@ func commandPokedex(cfg *config, writer io.Writer, args []string) error {
 	}
 
 	for _, p := range cfg.Caught {
-		fmt.Fprintf(writer, "- %s\n", p.Name)
+		fmt.Fprintf(writer, "- %s\n", capitalize(p.Name))
 	}
 	return nil
 }

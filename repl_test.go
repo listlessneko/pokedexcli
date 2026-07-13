@@ -66,7 +66,7 @@ func TestCommandInspect(t *testing.T) {
 					},
 				},
 			},
-			expected: "Name: lotad\nHeight: 5\nWeight: 26\nStats:\n- hp: 40\nTypes:\n- water\n",
+			expected: "Name: Lotad\nHeight: 5\nWeight: 26\nStats:\n- hp: 40\nTypes:\n- Water\n",
 		},
 		{
 			args: []string{"lotad"},
@@ -117,7 +117,7 @@ func TestCommandPokedex(t *testing.T) {
 					Name: "lugia",
 				},
 			},
-			expected: []string{"- cyndaquil", "- lotad", "- lugia"},
+			expected: []string{"- Cyndaquil", "- Lotad", "- Lugia"},
 		},
 	}
 
