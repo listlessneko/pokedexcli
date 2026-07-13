@@ -38,12 +38,12 @@ func TestCleanInput(t *testing.T) {
 
 func TestCommandInspect(t *testing.T) {
 	cases := []struct {
-		input string
+		args []string
 		caught map[string]Pokemon
 		expected string
 	}{
 		{
-			input: "lotad",
+			args: []string{"lotad"},
 			caught: map[string]Pokemon {
 				"lotad": Pokemon {
 					Name: "lotad",
@@ -68,13 +68,23 @@ func TestCommandInspect(t *testing.T) {
 			},
 			expected: "Name: lotad\nHeight: 5\nWeight: 26\nStats:\n- hp: 40\nTypes:\n- water\n",
 		},
+		{
+			args: []string{"lotad"},
+			caught: map[string]Pokemon{},
+			expected: "you have not caught that pokemon\n",
+		},
+		{
+			args: []string{},
+			caught: map[string]Pokemon{},
+			expected: "no pokemon provided\n",
+		},
 	}
 
 	for _, c := range cases {
 		cfg := &config{Caught: c.caught}
 
 		var buf bytes.Buffer
-		err := commandInspect(cfg, &buf, []string{c.input})
+		err := commandInspect(cfg, &buf, c.args)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
