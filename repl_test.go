@@ -36,6 +36,29 @@ func TestCleanInput(t *testing.T) {
 	}
 }
 
+func TestCapitalize(t *testing.T) {
+	cases := []struct {
+		input string
+		expected string
+	}{
+		{
+			input: "",
+			expected: "",
+		},
+		{
+			input: "lotad",
+			expected: "Lotad",
+		},
+	}
+
+	for _, c := range cases {
+		actual := capitalize(c.input)
+		if actual != c.expected {
+			t.Errorf("received %s, expected %s", actual, c.expected)
+		}
+	}
+}
+
 func TestCommandInspect(t *testing.T) {
 	cases := []struct {
 		args     []string
