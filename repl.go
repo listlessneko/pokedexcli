@@ -152,9 +152,16 @@ func startRepl() {
 	for {
 		fmt.Print("Pokedex > ")
 
+		if !scanner.Scan() {
+			fmt.Println()
+			break
+		}
+
 		var userInput []string
-		if scanner.Scan() {
-			userInput = cleanInput(scanner.Text())
+		userInput = cleanInput(scanner.Text())
+
+		if len(userInput) == 0 {
+			continue
 		}
 
 		commands := getCommands()
@@ -167,6 +174,10 @@ func startRepl() {
 		} else {
 			fmt.Println("Unknown command")
 		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		fmt.Println("error reading input:", err)
 	}
 }
 
