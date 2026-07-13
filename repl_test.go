@@ -71,12 +71,12 @@ func TestCommandInspect(t *testing.T) {
 		{
 			args: []string{"lotad"},
 			caught: map[string]Pokemon{},
-			expected: "you have not caught that pokemon\n",
+			expected: "You have not caught that Pokemon.\n",
 		},
 		{
 			args: []string{},
 			caught: map[string]Pokemon{},
-			expected: "no pokemon provided\n",
+			expected: "Please provide a valid Pokemon.\n",
 		},
 	}
 
@@ -102,6 +102,10 @@ func TestCommandPokedex(t *testing.T) {
 		expected []string
 	}{
 		{
+			caught: map[string]Pokemon{},
+			expected: []string{"Your Pokedex:\nYou have no Pokemon...\n"},
+		},
+		{
 			caught: map[string]Pokemon {
 				"lotad": Pokemon {
 					Name: "lotad",
@@ -126,17 +130,25 @@ func TestCommandPokedex(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
+		if len(c.caught) == 0 {
+			if buf.String() != c.expected[0] {
+				t.Errorf("received %v, expected %v", buf.String(), c.expected[0])
+			}
+			continue
+		}
+
 		lines := strings.Split(strings.TrimSpace(buf.String()), "\n")
 		caughtPokemon := lines[1:]
 		sort.Strings(caughtPokemon)
 
 		if len(caughtPokemon) != len(c.expected) {
 			t.Errorf("actual length (%d) does not match expected length (%d)", len(caughtPokemon), len(c.expected))
-		} else {
-			for i, p := range caughtPokemon {
-				if p != c.expected[i] {
-					t.Errorf("received %v, expected %v", p, c.expected[i])
-				}
+			continue
+		}
+
+		for i, p := range caughtPokemon {
+			if p != c.expected[i] {
+				t.Errorf("received %v, expected %v", p, c.expected[i])
 			}
 		}
 	}

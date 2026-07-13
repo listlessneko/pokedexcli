@@ -185,7 +185,7 @@ func commandMap(cfg *config, writer io.Writer, args []string) error {
 func commandMapB(cfg *config, writer io.Writer, args []string) error {
 	var url string
 	if cfg.Previous == nil {
-		fmt.Fprintln(writer, "you're on the first page")
+		fmt.Fprintln(writer, "You're on the first page.")
 		return nil
 	} else {
 		url = *cfg.Previous
@@ -224,7 +224,7 @@ func commandMapB(cfg *config, writer io.Writer, args []string) error {
 
 func commandExplore(cfg *config, writer io.Writer, args []string) error {
 	if len(args) == 0 {
-		fmt.Fprintln(writer, "no area provided")
+		fmt.Fprintln(writer, "Please provide a valid area.")
 		return nil
 	}
 
@@ -261,7 +261,7 @@ func commandExplore(cfg *config, writer io.Writer, args []string) error {
 
 func commandCatch(cfg *config, writer io.Writer, args []string) error {
 	if len(args) == 0 {
-		fmt.Fprintln(writer, "no pokemon provided")
+		fmt.Fprintln(writer, "Please provide a valid Pokemon.")
 		return nil
 	}
 
@@ -302,13 +302,13 @@ func commandCatch(cfg *config, writer io.Writer, args []string) error {
 
 func commandInspect(cfg *config, writer io.Writer, args []string) error {
 	if len(args) == 0 {
-		fmt.Fprintln(writer, "no pokemon provided")
+		fmt.Fprintln(writer, "Please provide a valid Pokemon.")
 		return nil
 	}
 
 	pokemon, ok := cfg.Caught[args[0]]
 	if !ok {
-		fmt.Fprintln(writer, "you have not caught that pokemon")
+		fmt.Fprintln(writer, "You have not caught that Pokemon.")
 		return nil
 	}
 
@@ -331,6 +331,12 @@ func commandInspect(cfg *config, writer io.Writer, args []string) error {
 
 func commandPokedex(cfg *config, writer io.Writer, args []string) error {
 	fmt.Fprintln(writer, "Your Pokedex:")
+
+	if len(cfg.Caught) == 0 {
+		fmt.Fprintln(writer, "You have no Pokemon...")
+		return nil
+	}
+
 	for _, p := range cfg.Caught {
 		fmt.Fprintf(writer, "- %s\n", p.Name)
 	}
