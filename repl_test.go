@@ -1,19 +1,19 @@
 package main
 
 import (
-	"testing"
 	"bytes"
 	"sort"
 	"strings"
+	"testing"
 )
 
 func TestCleanInput(t *testing.T) {
 	cases := []struct {
-		input string
+		input    string
 		expected []string
 	}{
 		{
-			input: "  hello  world  ",
+			input:    "  hello  world  ",
 			expected: []string{"hello", "world"},
 		},
 	}
@@ -38,28 +38,28 @@ func TestCleanInput(t *testing.T) {
 
 func TestCommandInspect(t *testing.T) {
 	cases := []struct {
-		args []string
-		caught map[string]Pokemon
+		args     []string
+		caught   map[string]Pokemon
 		expected string
 	}{
 		{
 			args: []string{"lotad"},
-			caught: map[string]Pokemon {
-				"lotad": Pokemon {
-					Name: "lotad",
+			caught: map[string]Pokemon{
+				"lotad": Pokemon{
+					Name:   "lotad",
 					Height: 5,
 					Weight: 26,
-					Stats: []PokemonStats {
+					Stats: []PokemonStats{
 						{
 							BaseStat: 40,
-							Stat: NamedAPIResource {
+							Stat: NamedAPIResource{
 								Name: "hp",
 							},
 						},
 					},
-					Types: []PokemonTypes {
+					Types: []PokemonTypes{
 						{
-							Type: NamedAPIResource {
+							Type: NamedAPIResource{
 								Name: "water",
 							},
 						},
@@ -69,13 +69,13 @@ func TestCommandInspect(t *testing.T) {
 			expected: "Name: Lotad\nHeight: 5\nWeight: 26\nStats:\n- hp: 40\nTypes:\n- Water\n",
 		},
 		{
-			args: []string{"lotad"},
-			caught: map[string]Pokemon{},
+			args:     []string{"lotad"},
+			caught:   map[string]Pokemon{},
 			expected: "You have not caught that Pokemon.\n",
 		},
 		{
-			args: []string{},
-			caught: map[string]Pokemon{},
+			args:     []string{},
+			caught:   map[string]Pokemon{},
 			expected: "Please provide a valid Pokemon.\n",
 		},
 	}
@@ -98,22 +98,22 @@ func TestCommandInspect(t *testing.T) {
 
 func TestCommandPokedex(t *testing.T) {
 	cases := []struct {
-		caught map[string]Pokemon
+		caught   map[string]Pokemon
 		expected []string
 	}{
 		{
-			caught: map[string]Pokemon{},
+			caught:   map[string]Pokemon{},
 			expected: []string{"Your Pokedex:\nYou have no Pokemon...\n"},
 		},
 		{
-			caught: map[string]Pokemon {
-				"lotad": Pokemon {
+			caught: map[string]Pokemon{
+				"lotad": Pokemon{
 					Name: "lotad",
 				},
-				"cyndaquil": Pokemon {
+				"cyndaquil": Pokemon{
 					Name: "cyndaquil",
 				},
-				"lugia": Pokemon {
+				"lugia": Pokemon{
 					Name: "lugia",
 				},
 			},
@@ -122,7 +122,7 @@ func TestCommandPokedex(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		cfg := &config {Caught: c.caught}
+		cfg := &config{Caught: c.caught}
 
 		var buf bytes.Buffer
 		err := commandPokedex(cfg, &buf, []string{""})
@@ -153,4 +153,3 @@ func TestCommandPokedex(t *testing.T) {
 		}
 	}
 }
-

@@ -1,18 +1,18 @@
 package main
 
 import (
-	"fmt"
-	"strings"
-	"sort"
-	"unicode"
 	"bufio"
-	"os"
-	"net/http"
-	"io"
 	"encoding/json"
-	"time"
-	"math/rand"
+	"fmt"
 	"github.com/listlessneko/pokedexcli/internal/pokecache"
+	"io"
+	"math/rand"
+	"net/http"
+	"os"
+	"sort"
+	"strings"
+	"time"
+	"unicode"
 )
 
 type cliCommand struct {
@@ -24,15 +24,15 @@ type cliCommand struct {
 
 type config struct {
 	Previous *string
-	Next *string
-	Cache *pokecache.Cache
-	Caught map[string]Pokemon
+	Next     *string
+	Cache    *pokecache.Cache
+	Caught   map[string]Pokemon
 }
 
 type locationAreaResp struct {
-	Next *string `json:"next"`
+	Next     *string `json:"next"`
 	Previous *string `json:"previous"`
-	Results []struct {
+	Results  []struct {
 		Name string `json:"name"`
 	} `json:"results"`
 }
@@ -47,78 +47,78 @@ type locationAreaDetailResp struct {
 
 type NamedAPIResource struct {
 	Name string `json:"name"`
-	URL string `json:"url"`
+	URL  string `json:"url"`
 }
 
 type PokemonStats struct {
-	BaseStat int `json:"base_stat"`
-	Effort int `json:"effort"`
-	Stat NamedAPIResource `json:"stat"`
+	BaseStat int              `json:"base_stat"`
+	Effort   int              `json:"effort"`
+	Stat     NamedAPIResource `json:"stat"`
 }
 
 type PokemonTypes struct {
-	Slot int `json:"slot"`
+	Slot int              `json:"slot"`
 	Type NamedAPIResource `json:"type"`
 }
 
 type Pokemon struct {
-	Name string `json:"name"`
-	BaseExperience int `json:"base_experience"`
-	Height int `json:"height"`
-	Weight int `json:"weight"`
-	Stats []PokemonStats `json:"stats"`
-	Types []PokemonTypes `json:"types"`
+	Name           string         `json:"name"`
+	BaseExperience int            `json:"base_experience"`
+	Height         int            `json:"height"`
+	Weight         int            `json:"weight"`
+	Stats          []PokemonStats `json:"stats"`
+	Types          []PokemonTypes `json:"types"`
 }
 
 func getCommands() map[string]cliCommand {
-	return map[string]cliCommand {
+	return map[string]cliCommand{
 		"help": {
-			name: "help",
-			usage: "help",
+			name:        "help",
+			usage:       "help",
 			description: "Displays a list of commands.",
-			callback: commandHelp,
+			callback:    commandHelp,
 		},
 		"map": {
-			name: "map",
-			usage: "map",
+			name:        "map",
+			usage:       "map",
 			description: "Displays a list of location areas.",
-			callback: commandMap,
+			callback:    commandMap,
 		},
 		"mapb": {
-			name: "mapb",
-			usage: "mapb",
+			name:        "mapb",
+			usage:       "mapb",
 			description: "Displays a list of the previous location areas.",
-			callback: commandMapB,
+			callback:    commandMapB,
 		},
 		"explore": {
-			name: "explore",
-			usage: "explore <location-area>",
+			name:        "explore",
+			usage:       "explore <location-area>",
 			description: "Displays a list of Pokemon in the location area.",
-			callback: commandExplore,
+			callback:    commandExplore,
 		},
 		"catch": {
-			name: "catch",
-			usage: "catch <pokemon-name>",
+			name:        "catch",
+			usage:       "catch <pokemon-name>",
 			description: "Try to catch a Pokemon.",
-			callback: commandCatch,
+			callback:    commandCatch,
 		},
 		"inspect": {
-			name: "inspect",
-			usage: "inspect <pokemon-name>",
+			name:        "inspect",
+			usage:       "inspect <pokemon-name>",
 			description: "Display information about a Pokemon you caught.",
-			callback: commandInspect,
+			callback:    commandInspect,
 		},
 		"pokedex": {
-			name: "pokedex",
-			usage: "pokedex",
+			name:        "pokedex",
+			usage:       "pokedex",
 			description: "Displays a list of Pokemon you caught.",
-			callback: commandPokedex,
+			callback:    commandPokedex,
 		},
 		"exit": {
-			name: "exit",
-			usage: "exit",
+			name:        "exit",
+			usage:       "exit",
 			description: "Exit the Pokedex.",
-			callback: commandExit,
+			callback:    commandExit,
 		},
 	}
 }
@@ -140,7 +140,7 @@ func startRepl() {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	cfg := &config{
-		Cache: pokecache.NewCache(5 * time.Second),
+		Cache:  pokecache.NewCache(5 * time.Second),
 		Caught: make(map[string]Pokemon),
 	}
 
@@ -186,7 +186,7 @@ func commandHelp(cfg *config, writer io.Writer, args []string) error {
 func commandMap(cfg *config, writer io.Writer, args []string) error {
 	var url string
 	if cfg.Next == nil {
-		url = "https://pokeapi.co/api/v2/location-area/" 
+		url = "https://pokeapi.co/api/v2/location-area/"
 	} else {
 		url = *cfg.Next
 	}
@@ -368,7 +368,7 @@ func commandInspect(cfg *config, writer io.Writer, args []string) error {
 	for _, t := range pokemon.Types {
 		fmt.Fprintf(writer, "- %s\n", capitalize(t.Type.Name))
 	}
-	
+
 	return nil
 }
 
