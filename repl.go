@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strings"
+	"unicode"
 	"bufio"
 	"os"
 	"net/http"
@@ -110,6 +111,19 @@ var commands = map[string]cliCommand {
 	},
 }
 
+func cleanInput(text string) []string {
+	return strings.Fields(strings.ToLower(text))
+}
+
+func capitalize(s string) string {
+	if s == "" {
+		return s
+	}
+	r := []rune(s)
+	r[0] = unicode.ToUpper(r[0])
+	return string(r)
+}
+
 func startRepl() {
 	scanner := bufio.NewScanner(os.Stdin)
 
@@ -166,18 +180,18 @@ func commandMap(cfg *config, writer io.Writer, args []string) error {
 		cfg.Cache.Add(url, b)
 	}
 
-	var result locationAreaResp
-	err := json.Unmarshal(b, &result)
+	var locations locationAreaResp
+	err := json.Unmarshal(b, &locations)
 	if err != nil {
 		return err
 	}
 
-	for _, r := range result.Results {
+	for _, r := range locations.Results {
 		fmt.Fprintln(writer, r.Name)
 	}
 
-	cfg.Next = result.Next
-	cfg.Previous = result.Previous
+	cfg.Next = locations.Next
+	cfg.Previous = locations.Previous
 
 	return nil
 }
@@ -206,18 +220,18 @@ func commandMapB(cfg *config, writer io.Writer, args []string) error {
 		cfg.Cache.Add(url, b)
 	}
 
-	var result locationAreaResp
-	err := json.Unmarshal(b, &result)
+	var locations locationAreaResp
+	err := json.Unmarshal(b, &locations)
 	if err != nil {
 		return err
 	}
 
-	for _, r := range result.Results {
+	for _, r := range locations.Results {
 		fmt.Fprintln(writer, r.Name)
 	}
 
-	cfg.Next = result.Next
-	cfg.Previous = result.Previous
+	cfg.Next = locations.Next
+	cfg.Previous = locations.Previous
 
 	return nil
 }
@@ -246,13 +260,13 @@ func commandExplore(cfg *config, writer io.Writer, args []string) error {
 		cfg.Cache.Add(area_url, b)
 	}
 
-	var result locationAreaDetailResp
-	err := json.Unmarshal(b, &result)
+	var location locationAreaDetailResp
+	err := json.Unmarshal(b, &location)
 	if err != nil {
 		return err
 	}
 
-	for _, r := range result.PokemonEncounters {
+	for _, r := range location.PokemonEncounters {
 		fmt.Fprintln(writer, r.Pokemon.Name)
 	}
 
@@ -282,19 +296,19 @@ func commandCatch(cfg *config, writer io.Writer, args []string) error {
 		cfg.Cache.Add(url, b)
 	}
 
-	var result Pokemon
-	err := json.Unmarshal(b, &result)
+	var pokemon Pokemon
+	err := json.Unmarshal(b, &pokemon)
 	if err != nil {
 		return err
 	}
 
-	fmt.Fprintf(writer, "Throwing a Pokeball at %s...\n", result.Name)
-	if rand.Intn(result.BaseExperience) < 50 {
-		cfg.Caught[result.Name] = result
-		fmt.Fprintf(writer, "You caught %s!\n", result.Name)
+	fmt.Fprintf(writer, "Throwing a Pokeball at %s...\n", (pokemon.Name))
+	if rand.Intn(pokemon.BaseExperience) < 50 {
+		cfg.Caught[pokemon.Name] = pokemon
+		fmt.Fprintf(writer, "You caught %s!\n", pokemon.Name)
 		fmt.Fprintln(writer, "You man now inspect it with the inspect command.")
 	} else {
-		fmt.Fprintf(writer, "%s ran away...\n", result.Name)
+		fmt.Fprintf(writer, "%s ran away...\n", pokemon.Name)
 	}
 
 	return nil
@@ -347,8 +361,4 @@ func commandExit(cfg *config, writer io.Writer, args []string) error {
 	fmt.Fprintln(writer, "Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
-}
-
-func cleanInput(text string) []string {
-	return strings.Fields(strings.ToLower(text))
 }
