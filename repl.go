@@ -131,9 +131,14 @@ func capitalize(s string) string {
 	if s == "" {
 		return s
 	}
-	r := []rune(s)
-	r[0] = unicode.ToUpper(r[0])
-	return string(r)
+
+	final := ""
+	for w := range strings.SplitSeq(strings.TrimSpace(s), " ") {
+		r := []rune(w)
+		r[0] = unicode.ToUpper(r[0])
+		final = final + string(r) + " "
+	}
+	return strings.TrimSpace(final)
 }
 
 func startRepl() {

@@ -38,16 +38,20 @@ func TestCleanInput(t *testing.T) {
 
 func TestCapitalize(t *testing.T) {
 	cases := []struct {
-		input string
+		input    string
 		expected string
 	}{
 		{
-			input: "",
+			input:    "",
 			expected: "",
 		},
 		{
-			input: "lotad",
+			input:    "lotad",
 			expected: "Lotad",
+		},
+		{
+			input:    "This is pokemon",
+			expected: "This Is Pokemon",
 		},
 	}
 
