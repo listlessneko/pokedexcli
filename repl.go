@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strings"
+	"sort"
 	"unicode"
 	"bufio"
 	"os"
@@ -16,6 +17,7 @@ import (
 
 type cliCommand struct {
 	name        string
+	usage       string
 	description string
 	callback    func(*config, io.Writer, []string) error
 }
@@ -68,47 +70,57 @@ type Pokemon struct {
 	Types []PokemonTypes `json:"types"`
 }
 
-var commands = map[string]cliCommand {
-	"help": {
-		name: "help",
-		description: "Displays a help message",
-		callback: commandHelp,
-	},
-	"map": {
-		name: "map",
-		description: "Get a list of location areas",
-		callback: commandMap,
-	},
-	"mapb": {
-		name: "mapb",
-		description: "Get a list of the previous location areas",
-		callback: commandMapB,
-	},
-	"explore": {
-		name: "explore",
-		description: "Get a list of the pokemon in this location area",
-		callback: commandExplore,
-	},
-	"catch": {
-		name: "catch",
-		description: "Try to catch a pokemon",
-		callback: commandCatch,
-	},
-	"inspect": {
-		name: "inspect",
-		description: "View a pokemon's stats",
-		callback: commandInspect,
-	},
-	"pokedex": {
-		name: "pokedex",
-		description: "View your caught pokemon",
-		callback: commandPokedex,
-	},
-	"exit": {
-		name: "exit",
-		description: "Exit the Pokedex",
-		callback: commandExit,
-	},
+func getCommands() map[string]cliCommand {
+	return map[string]cliCommand {
+		"help": {
+			name: "help",
+			usage: "help",
+			description: "Displays a list of commands.",
+			callback: commandHelp,
+		},
+		"map": {
+			name: "map",
+			usage: "map",
+			description: "Displays a list of location areas.",
+			callback: commandMap,
+		},
+		"mapb": {
+			name: "mapb",
+			usage: "mapb",
+			description: "Displays a list of the previous location areas.",
+			callback: commandMapB,
+		},
+		"explore": {
+			name: "explore",
+			usage: "explore <location-area>",
+			description: "Displays a list of Pokemon in the location area.",
+			callback: commandExplore,
+		},
+		"catch": {
+			name: "catch",
+			usage: "catch <pokemon-name>",
+			description: "Try to catch a Pokemon.",
+			callback: commandCatch,
+		},
+		"inspect": {
+			name: "inspect",
+			usage: "inspect <pokemon-name>",
+			description: "Display information about a Pokemon you caught.",
+			callback: commandInspect,
+		},
+		"pokedex": {
+			name: "pokedex",
+			usage: "pokedex",
+			description: "Displays a list of Pokemon you caught.",
+			callback: commandPokedex,
+		},
+		"exit": {
+			name: "exit",
+			usage: "exit",
+			description: "Exit the Pokedex.",
+			callback: commandExit,
+		},
+	}
 }
 
 func cleanInput(text string) []string {
@@ -140,6 +152,7 @@ func startRepl() {
 			userInput = cleanInput(scanner.Text())
 		}
 
+		commands := getCommands()
 		command, exists := commands[userInput[0]]
 		if exists {
 			err := command.callback(cfg, os.Stdout, userInput[1:])
@@ -153,7 +166,20 @@ func startRepl() {
 }
 
 func commandHelp(cfg *config, writer io.Writer, args []string) error {
-	fmt.Fprintln(writer, "Welcome to the Pokedex!\nUsage:\n\nhelp: Displays a help message\nexit: Exit the Pokedex")
+	fmt.Fprintln(writer, "Welcome to the Pokedex!\nCommands:")
+
+	commands := getCommands()
+
+	keys := make([]string, 0, len(commands))
+	for k := range commands {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	for _, k := range keys {
+		command := commands[k]
+		fmt.Fprintf(writer, "Command: %s\nUsage: %s\n%s\n\n", command.name, command.usage, command.description)
+	}
 	return nil
 }
 
