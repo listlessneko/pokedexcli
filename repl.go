@@ -1,10 +1,11 @@
 package main
 
 import (
-	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/listlessneko/pokedexcli/internal/pokecache"
+	"golang.org/x/term"
 	"io"
 	"math/rand"
 	"net/http"
@@ -13,6 +14,23 @@ import (
 	"strings"
 	"time"
 	"unicode"
+)
+
+const (
+	bufSize      = 3
+	newLine      = '\x0a'
+	keyEnter     = '\x0d'
+	keyBackspace = '\x7f'
+	keyCtrlC     = '\x03'
+	keyCtrlD     = '\x04'
+	keyEscape    = '\x1b'
+	keyLSqBrckt  = '\x5b'
+	keyA         = '\x41'
+	keyB         = '\x42'
+	keyC         = '\x43'
+	keyD         = '\x44'
+	enterSeq     = "\x0d\x0a"
+	eraseSeq     = "\x08\x20\x08"
 )
 
 type cliCommand struct {
@@ -141,43 +159,114 @@ func capitalize(s string) string {
 	return strings.TrimSpace(final)
 }
 
-func startRepl() {
-	scanner := bufio.NewScanner(os.Stdin)
+func redraw(current []byte, new []byte) {
+	for range len(current) {
+		os.Stdout.Write([]byte(eraseSeq))
+	}
+	os.Stdout.Write(new)
+}
 
+func readLine(prompt string, history []string) (string, error) {
+	os.Stdout.Write([]byte(prompt))
+
+	fd := int(os.Stdin.Fd())
+	oldState, err := term.MakeRaw(fd)
+	if err != nil {
+		return "", fmt.Errorf("error enabling raw mode: %w", err)
+	}
+
+	defer term.Restore(fd, oldState)
+
+	historyIndex := len(history)
+	var currentLine []byte
+	buf := make([]byte, bufSize)
+	for {
+		n, err := os.Stdin.Read(buf)
+		if err != nil {
+			return "", fmt.Errorf("error reading bytes: %w", err)
+		}
+
+		for i := 0; i < n; i++ {
+			b := buf[i]
+			if b == keyEnter {
+				os.Stdout.Write([]byte(enterSeq))
+				return string(currentLine), nil
+			} else if b == keyCtrlD || b == keyCtrlC {
+				return "", io.EOF
+			} else if b == keyBackspace {
+				if len(currentLine) > 0 {
+					currentLine = currentLine[:len(currentLine)-1]
+					os.Stdout.Write([]byte(eraseSeq))
+					continue
+				}
+			} else if b == keyEscape {
+				if i+2 < n && buf[i+1] == keyLSqBrckt && (buf[i+2] == keyA || buf[i+2] == keyD) {
+					if historyIndex > 0 {
+						historyIndex -= 1
+						previousLine := currentLine
+						currentLine = []byte(history[historyIndex])
+						redraw(previousLine, currentLine)
+					}
+					i += 2
+				} else if i+2 < n && buf[i+1] == keyLSqBrckt && (buf[i+2] == keyB || buf[i+2] == keyC) {
+					if historyIndex < len(history) {
+						historyIndex += 1
+						previousLine := currentLine
+						if historyIndex == len(history) {
+							currentLine = []byte("")
+						} else {
+							currentLine = []byte(history[historyIndex])
+						}
+						redraw(previousLine, currentLine)
+					}
+					i += 2
+				}
+			} else {
+				currentLine = append(currentLine, b)
+				os.Stdout.Write([]byte{b})
+			}
+		}
+	}
+}
+
+func startRepl() {
 	cfg := &config{
 		Cache:  pokecache.NewCache(5 * time.Second),
 		Caught: make(map[string]Pokemon),
 	}
 
-	for {
-		fmt.Print("Pokedex > ")
+	prompt := "Pokedex > "
+	var history []string
 
-		if !scanner.Scan() {
-			fmt.Println()
+	for {
+
+		line, err := readLine(prompt, history)
+		if errors.Is(err, io.EOF) {
+			os.Stdout.Write([]byte{newLine})
+			break
+		} else if err != nil {
+			os.Stderr.Write([]byte(err.Error()))
 			break
 		}
 
-		var userInput []string
-		userInput = cleanInput(scanner.Text())
+		userInput := cleanInput(line)
 
 		if len(userInput) == 0 {
 			continue
 		}
+
+		history = append(history, line)
 
 		commands := getCommands()
 		command, exists := commands[userInput[0]]
 		if exists {
 			err := command.callback(cfg, os.Stdout, userInput[1:])
 			if err != nil {
-				fmt.Println(err)
+				os.Stderr.Write([]byte(err.Error()))
 			}
 		} else {
-			fmt.Println("Unknown command")
+			os.Stdout.Write([]byte("unknown command\n"))
 		}
-	}
-
-	if err := scanner.Err(); err != nil {
-		fmt.Println("error reading input:", err)
 	}
 }
 
