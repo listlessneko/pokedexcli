@@ -185,46 +185,48 @@ func readLine(prompt string, history []string) (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("error reading bytes: %w", err)
 		}
-
 		for i := 0; i < n; i++ {
 			b := buf[i]
-			if b == keyEnter {
+			switch b {
+			case keyCtrlC, keyCtrlD:
+				return "", io.EOF
+			case keyEnter:
 				os.Stdout.Write([]byte(enterSeq))
 				return string(currentLine), nil
-			} else if b == keyCtrlD || b == keyCtrlC {
-				return "", io.EOF
-			} else if b == keyBackspace {
+			case keyBackspace:
 				if len(currentLine) > 0 {
 					currentLine = currentLine[:len(currentLine)-1]
 					os.Stdout.Write([]byte(eraseSeq))
-					continue
 				}
-			} else if b == keyEscape {
-				if i+2 < n && buf[i+1] == keyLSqBrckt && (buf[i+2] == keyA || buf[i+2] == keyD) {
-					if historyIndex > 0 {
-						historyIndex -= 1
-						previousLine := currentLine
-						currentLine = []byte(history[historyIndex])
-						redraw(previousLine, currentLine)
-					}
-					i += 2
-				} else if i+2 < n && buf[i+1] == keyLSqBrckt && (buf[i+2] == keyB || buf[i+2] == keyC) {
-					if historyIndex < len(history) {
-						historyIndex += 1
-						previousLine := currentLine
-						if historyIndex == len(history) {
-							currentLine = []byte("")
-						} else {
+				continue
+			case keyEscape:
+				if i+2 < n && buf[i+1] == keyLSqBrckt {
+					switch buf[i+2] {
+					case keyA, keyD:
+						if historyIndex > 0 {
+							historyIndex -= 1
+							previousLine := currentLine
 							currentLine = []byte(history[historyIndex])
+							redraw(previousLine, currentLine)
 						}
-						redraw(previousLine, currentLine)
+					case keyB, keyC:
+						if historyIndex < len(history) {
+							historyIndex += 1
+							previousLine := currentLine
+							if historyIndex == len(history) {
+								currentLine = []byte("")
+							} else {
+								currentLine = []byte(history[historyIndex])
+							}
+							redraw(previousLine, currentLine)
+						}
 					}
 					i += 2
 				}
-			} else {
-				currentLine = append(currentLine, b)
-				os.Stdout.Write([]byte{b})
+				continue
 			}
+			currentLine = append(currentLine, b)
+			os.Stdout.Write([]byte{b})
 		}
 	}
 }
