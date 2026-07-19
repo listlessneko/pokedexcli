@@ -31,6 +31,8 @@ const (
 	keyD         = '\x44'
 	enterSeq     = "\x0d\x0a"
 	eraseSeq     = "\x08\x20\x08"
+	cursorFwd    = "\x1b[C"
+	cursorBckwd  = "\x1b[D"
 )
 
 type cliCommand struct {
@@ -178,6 +180,7 @@ func readLine(prompt string, history []string) (string, error) {
 	defer term.Restore(fd, oldState)
 
 	historyIndex := len(history)
+	var cursor int
 	var currentLine []byte
 	buf := make([]byte, bufSize)
 	for {
@@ -196,20 +199,21 @@ func readLine(prompt string, history []string) (string, error) {
 			case keyBackspace:
 				if len(currentLine) > 0 {
 					currentLine = currentLine[:len(currentLine)-1]
+					cursor -= 1
 					os.Stdout.Write([]byte(eraseSeq))
 				}
 				continue
 			case keyEscape:
 				if i+2 < n && buf[i+1] == keyLSqBrckt {
 					switch buf[i+2] {
-					case keyA, keyD:
+					case keyA:
 						if historyIndex > 0 {
 							historyIndex -= 1
 							previousLine := currentLine
 							currentLine = []byte(history[historyIndex])
 							redraw(previousLine, currentLine)
 						}
-					case keyB, keyC:
+					case keyB:
 						if historyIndex < len(history) {
 							historyIndex += 1
 							previousLine := currentLine
@@ -220,12 +224,23 @@ func readLine(prompt string, history []string) (string, error) {
 							}
 							redraw(previousLine, currentLine)
 						}
+					case keyC:
+						if cursor < len(currentLine) {
+							cursor += 1
+							os.Stdout.Write([]byte(cursorFwd))
+						}
+					case keyD:
+						if cursor > 0 {
+							cursor -= 1
+							os.Stdout.Write([]byte(cursorBckwd))
+						}
 					}
 					i += 2
 				}
 				continue
 			}
 			currentLine = append(currentLine, b)
+			cursor += 1
 			os.Stdout.Write([]byte{b})
 		}
 	}
