@@ -30,7 +30,7 @@ const (
 	keyC         = '\x43'
 	keyD         = '\x44'
 	enterSeq     = "\x0d\x0a"
-	eraseSeq     = "\x08\x20\x08"
+	eraseSeq     = "\x1b[K"
 	cursorFwd    = "\x1b[C"
 	cursorBckwd  = "\x1b[D"
 )
@@ -161,10 +161,12 @@ func capitalize(s string) string {
 	return strings.TrimSpace(final)
 }
 
-func redraw(current []byte, new []byte) {
-	for range len(current) {
-		os.Stdout.Write([]byte(eraseSeq))
+func redraw(new []byte, cursor int) {
+	if cursor > 0 {
+		seq := fmt.Sprintf("\x1b[%dD", cursor)
+		os.Stdout.Write([]byte(seq))
 	}
+	os.Stdout.Write([]byte(eraseSeq))
 	os.Stdout.Write(new)
 }
 
@@ -215,20 +217,20 @@ func readLine(prompt string, history []string) (string, error) {
 					case keyA:
 						if historyIndex > 0 {
 							historyIndex -= 1
-							previousLine := currentLine
 							currentLine = []byte(history[historyIndex])
-							redraw(previousLine, currentLine)
+							redraw(currentLine, cursor)
+							cursor = len(currentLine)
 						}
 					case keyB:
 						if historyIndex < len(history) {
 							historyIndex += 1
-							previousLine := currentLine
 							if historyIndex == len(history) {
 								currentLine = []byte("")
 							} else {
 								currentLine = []byte(history[historyIndex])
 							}
-							redraw(previousLine, currentLine)
+							redraw(currentLine, cursor)
+							cursor = len(currentLine)
 						}
 					case keyC:
 						if cursor < len(currentLine) {
