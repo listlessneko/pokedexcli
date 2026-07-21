@@ -197,10 +197,16 @@ func readLine(prompt string, history []string) (string, error) {
 				os.Stdout.Write([]byte(enterSeq))
 				return string(currentLine), nil
 			case keyBackspace:
-				if len(currentLine) > 0 {
+				if cursor > 0 {
+					copy(currentLine[cursor-1:], currentLine[cursor:])
 					currentLine = currentLine[:len(currentLine)-1]
 					cursor -= 1
-					os.Stdout.Write([]byte(eraseSeq))
+					os.Stdout.Write([]byte(cursorBckwd))
+					os.Stdout.Write([]byte(currentLine[cursor:]))
+					os.Stdout.Write([]byte(" "))
+					nCol := len(currentLine) - cursor + 1
+					seq := fmt.Sprintf("\x1b[%dD", nCol)
+					os.Stdout.Write([]byte(seq))
 				}
 				continue
 			case keyEscape:
@@ -239,9 +245,16 @@ func readLine(prompt string, history []string) (string, error) {
 				}
 				continue
 			}
-			currentLine = append(currentLine, b)
+			currentLine = append(currentLine, 0)
+			copy(currentLine[cursor+1:], currentLine[cursor:])
+			currentLine[cursor] = b
 			cursor += 1
-			os.Stdout.Write([]byte{b})
+			os.Stdout.Write(currentLine[cursor-1:])
+			nCol := len(currentLine) - cursor
+			if nCol > 0 {
+				seq := fmt.Sprintf("\x1b[%dD", nCol) 
+				os.Stdout.Write([]byte(seq))
+			}
 		}
 	}
 }
