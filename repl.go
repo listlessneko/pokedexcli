@@ -134,6 +134,12 @@ func getCommands() map[string]cliCommand {
 			description: "Displays a list of Pokemon you caught.",
 			callback:    commandPokedex,
 		},
+		"save": {
+			name: "save",
+			usage: "save",
+			description: "Save current session.",
+			callback: commandSave,
+		},
 		"exit": {
 			name:        "exit",
 			usage:       "exit",
@@ -520,6 +526,20 @@ func commandPokedex(cfg *config, writer io.Writer, args []string) error {
 	for _, p := range cfg.Caught {
 		fmt.Fprintf(writer, "- %s\n", capitalize(p.Name))
 	}
+	return nil
+}
+
+func commandSave(cfg *config, writer io.Writer, args []string) error {
+	data, err := json.Marshal(cfg.Caught)
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile("pokedex.json", data, 0644)
+	if err != nil {
+		return err
+	}
+	fmt.Fprintln(writer, "Pokedex saved.")
 	return nil
 }
 
