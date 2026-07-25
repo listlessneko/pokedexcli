@@ -47,6 +47,7 @@ type config struct {
 	Next     *string
 	Cache    *pokecache.Cache
 	Caught   map[string]Pokemon
+	SaveFile string
 }
 
 type locationAreaResp struct {
@@ -347,7 +348,9 @@ func startRepl() {
 		Caught: make(map[string]Pokemon),
 	}
 
-	data, err := os.ReadFile("pokedex.json")
+	cfg.SaveFile = "saves/ash_ketchum.json"
+
+	data, err := os.ReadFile(cfg.SaveFile)
 	if !os.IsNotExist(err) {
 		if err == nil {
 			err = json.Unmarshal(data, &cfg.Caught)
@@ -619,7 +622,7 @@ func commandSave(cfg *config, writer io.Writer, args []string) error {
 		return err
 	}
 
-	err = os.WriteFile("pokedex.json", data, 0644)
+	err = os.WriteFile(cfg.SaveFile, data, 0644)
 	if err != nil {
 		return err
 	}
