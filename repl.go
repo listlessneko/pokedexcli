@@ -158,7 +158,40 @@ func sanitizeInput(text string) string {
 		return text
 	}
 
-	return strings.ReplaceAll(strings.ToLower(text), " ", "_")
+	r := strings.NewReplacer(
+		"`", "_",
+		"~", "_",
+		"!", "_",
+		"#", "_",
+		"$", "_",
+		"%", "_",
+		"^", "_",
+		"&", "_",
+		"*", "_",
+		"(", "_",
+		")", "_",
+		"-", "_",
+		"+", "_",
+		"[", "_",
+		"]", "_",
+		"{", "_",
+		"}", "_",
+		"\\", "_",
+		"|", "_",
+		";", "_",
+		":", "_",
+		"'", "_",
+		"\"", "_",
+		"<", "_",
+		">", "_",
+		",", "_",
+		".", "_",
+		"/", "_",
+		"?", "_",
+		" ", "_",
+	)
+	text = r.Replace(text)
+	return strings.ToLower(text)
 }
 
 func capitalize(s string) string {

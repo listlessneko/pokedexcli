@@ -51,7 +51,15 @@ func TestSanitizeInput(t *testing.T) {
 		},
 		{
 			input:    "Gotta Catch 'Em All",
-			expected: "gotta_catch_'em_all",
+			expected: "gotta_catch__em_all",
+		},
+		{
+			input:    "M!sty",
+			expected: "m_sty",
+		},
+		{
+			input:    "Br()(k",
+			expected: "br___k",
 		},
 	}
 
