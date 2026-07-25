@@ -135,10 +135,10 @@ func getCommands() map[string]cliCommand {
 			callback:    commandPokedex,
 		},
 		"save": {
-			name: "save",
-			usage: "save",
+			name:        "save",
+			usage:       "save",
 			description: "Save current session.",
-			callback: commandSave,
+			callback:    commandSave,
 		},
 		"exit": {
 			name:        "exit",
@@ -151,6 +151,14 @@ func getCommands() map[string]cliCommand {
 
 func cleanInput(text string) []string {
 	return strings.Fields(strings.ToLower(text))
+}
+
+func sanitizeInput(text string) string {
+	if text == "" {
+		return text
+	}
+
+	return strings.ReplaceAll(strings.ToLower(text), " ", "_")
 }
 
 func capitalize(s string) string {
@@ -260,7 +268,7 @@ func readLine(prompt string, history []string) (string, error) {
 			os.Stdout.Write(currentLine[cursor-1:])
 			nCol := len(currentLine) - cursor
 			if nCol > 0 {
-				seq := fmt.Sprintf("\x1b[%dD", nCol) 
+				seq := fmt.Sprintf("\x1b[%dD", nCol)
 				os.Stdout.Write([]byte(seq))
 			}
 		}

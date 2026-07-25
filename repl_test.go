@@ -36,6 +36,37 @@ func TestCleanInput(t *testing.T) {
 	}
 }
 
+func TestSanitizeInput(t *testing.T) {
+	cases := []struct {
+		input    string
+		expected string
+	}{
+		{
+			input:    "",
+			expected: "",
+		},
+		{
+			input:    "Ash Ketchum",
+			expected: "ash_ketchum",
+		},
+		{
+			input:    "Gotta Catch 'Em All",
+			expected: "gotta_catch_'em_all",
+		},
+	}
+
+	for _, c := range cases {
+		actual := sanitizeInput(c.input)
+
+		if len(actual) != len(c.expected) {
+			t.Errorf("actual length (%d) does not match expected length (%d)", len(actual), len(c.expected))
+		}
+		if actual != c.expected {
+			t.Errorf("received %s, expected %s", actual, c.expected)
+		}
+	}
+}
+
 func TestCapitalize(t *testing.T) {
 	cases := []struct {
 		input    string
