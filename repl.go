@@ -308,6 +308,39 @@ func readLine(prompt string, history []string) (string, error) {
 	}
 }
 
+func loadIndex() (map[string]string, error) {
+	var index map[string]string
+
+	data, err := os.ReadFile("saves/index.json")
+	if !os.IsNotExist(err) {
+		if err == nil {
+			err = json.Unmarshal(data, &index)
+		}
+		if err != nil {
+			return index, err
+		}
+	} else {
+		index = make(map[string]string)
+	}
+	return index, nil
+}
+
+func saveIndex(index map[string]string) error {
+	err := os.MkdirAll("saves", 0755)
+	if err != nil {
+		return err
+	}
+	data, err := json.Marshal(index)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile("saves/index.json", data, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func startRepl() {
 	cfg := &config{
 		Cache:  pokecache.NewCache(5 * time.Second),
