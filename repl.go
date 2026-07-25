@@ -273,6 +273,16 @@ func startRepl() {
 		Caught: make(map[string]Pokemon),
 	}
 
+	data, err := os.ReadFile("pokedex.json")
+	if !os.IsNotExist(err) {
+		if err == nil {
+			err = json.Unmarshal(data, &cfg.Caught)
+		}
+		if err != nil {
+			os.Stderr.Write([]byte(err.Error()))
+		}
+	}
+
 	prompt := "Pokedex > "
 	var history []string
 
