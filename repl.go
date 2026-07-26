@@ -31,6 +31,10 @@ const (
 	keyD         = '\x44'
 	enterSeq     = "\x0d\x0a"
 	eraseSeq     = "\x1b[K"
+	cursorHide   = "\x1b[?25l"
+	cursorShow   = "\x1b[?25h"
+	cursorUp     = "\x1b[A"
+	cursorDown   = "\x1b[B"
 	cursorFwd    = "\x1b[C"
 	cursorBckwd  = "\x1b[D"
 )
@@ -304,6 +308,83 @@ func readLine(prompt string, history []string) (string, error) {
 			if nCol > 0 {
 				seq := fmt.Sprintf("\x1b[%dD", nCol)
 				os.Stdout.Write([]byte(seq))
+			}
+		}
+	}
+}
+
+func drawList(keys []string, selected int) {
+	for i, k := range keys {
+		prefix := " "
+		if i == selected {
+			prefix = "> "
+		}
+		line := eraseSeq + prefix + k
+		if i < len(keys)-1 {
+			line += "\r\n"
+		}
+		os.Stdout.Write([]byte(line))
+	}
+}
+
+func selectPrompt(index map[string]string) (string, error) {
+
+	keys := make([]string, 0, len(index))
+	for k := range index {
+		keys = append(keys, k)
+	}
+
+	sort.Strings(keys)
+
+	selected := 0
+	drawList(keys, selected)
+
+	os.Stdout.Write([]byte(cursorHide))
+	defer os.Stdout.Write([]byte(cursorShow))
+
+	fd := int(os.Stdin.Fd())
+	oldState, err := term.MakeRaw(fd)
+	if err != nil {
+		return "", fmt.Errorf("error enabling raw mode: %w", err)
+	}
+
+	defer term.Restore(fd, oldState)
+
+	buf := make([]byte, bufSize)
+	for {
+		n, err := os.Stdin.Read(buf)
+		if err != nil {
+			return "", fmt.Errorf("error reading bytes: %w", err)
+		}
+		for i := 0; i < n; i++ {
+			b := buf[i]
+			switch b {
+			case keyCtrlC, keyCtrlD:
+				return "", io.EOF
+			case keyEnter:
+				os.Stdout.Write([]byte(enterSeq))
+				return keys[selected], nil
+			case keyEscape:
+				if i+2 < n && buf[i+1] == keyLSqBrckt {
+					switch buf[i+2] {
+					case keyA:
+						if selected > 0 {
+							selected--
+							moveCursorUp := fmt.Sprintf("\r\x1b[%dA", len(keys)-1)
+							os.Stdout.Write([]byte(moveCursorUp))
+							drawList(keys, selected)
+						}
+					case keyB:
+						if selected < len(keys)-1 {
+							selected++
+							moveCursorUp := fmt.Sprintf("\r\x1b[%dA", len(keys)-1)
+							os.Stdout.Write([]byte(moveCursorUp))
+							drawList(keys, selected)
+						}
+					}
+					i += 2
+				}
+				continue
 			}
 		}
 	}
