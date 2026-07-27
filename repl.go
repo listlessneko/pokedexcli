@@ -313,6 +313,20 @@ func readLine(prompt string, history []string) (string, error) {
 	}
 }
 
+func sortSaveList(index map[string]string) ([]string, error) {
+	var keys []string
+	if len(index) == 0 {
+		return keys, errors.New("unable to sort empty list")
+	}
+
+	for k := range index {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	keys = append(keys, "[New Save]")
+	return keys, nil
+}
+
 func drawList(keys []string, selected int) {
 	for i, k := range keys {
 		prefix := " "
@@ -328,13 +342,10 @@ func drawList(keys []string, selected int) {
 }
 
 func selectPrompt(index map[string]string) (string, error) {
-
-	keys := make([]string, 0, len(index))
-	for k := range index {
-		keys = append(keys, k)
+	keys, err := sortSaveList(index)
+	if err != nil {
+		return "", err
 	}
-
-	sort.Strings(keys)
 
 	selected := 0
 	drawList(keys, selected)
@@ -363,7 +374,7 @@ func selectPrompt(index map[string]string) (string, error) {
 				return "", io.EOF
 			case keyEnter:
 				os.Stdout.Write([]byte(enterSeq))
-				return keys[selected], nil
+				return index[keys[selected]], nil
 			case keyEscape:
 				if i+2 < n && buf[i+1] == keyLSqBrckt {
 					switch buf[i+2] {
@@ -438,8 +449,10 @@ func startRepl() {
 		if err != nil {
 			os.Stderr.Write([]byte(err.Error()))
 		}
-		cfg.SaveFile = saveFile
-	} 
+		if saveFile != "" {
+			cfg.SaveFile = "saves/" + saveFile + ".json"
+		}
+	}
 
 	data, err := os.ReadFile(cfg.SaveFile)
 	if !os.IsNotExist(err) {
@@ -714,7 +727,7 @@ func commandSave(cfg *config, writer io.Writer, args []string) error {
 	}
 
 	if cfg.SaveFile == "" {
-		prompt := "Name save file: "
+		prompt := "New save file: "
 		var history []string
 		var name string
 		for {
