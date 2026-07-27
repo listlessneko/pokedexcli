@@ -429,7 +429,17 @@ func startRepl() {
 		Caught: make(map[string]Pokemon),
 	}
 
-	cfg.SaveFile = "saves/ash_ketchum.json"
+	index, err := loadIndex()
+	if err != nil {
+		os.Stderr.Write([]byte(err.Error()))
+	}
+	if len(index) > 0 {
+		saveFile, err := selectPrompt(index)
+		if err != nil {
+			os.Stderr.Write([]byte(err.Error()))
+		}
+		cfg.SaveFile = saveFile
+	} 
 
 	data, err := os.ReadFile(cfg.SaveFile)
 	if !os.IsNotExist(err) {
@@ -468,7 +478,7 @@ func startRepl() {
 		if exists {
 			err := command.callback(cfg, os.Stdout, userInput[1:])
 			if err != nil {
-				os.Stderr.Write([]byte(err.Error()))
+				os.Stderr.Write([]byte(err.Error() + "\n"))
 			}
 		} else {
 			os.Stdout.Write([]byte("unknown command\n"))
@@ -703,8 +713,30 @@ func commandSave(cfg *config, writer io.Writer, args []string) error {
 		return err
 	}
 
+	if cfg.SaveFile == "" {
+		prompt := "Name save file: "
+		var history []string
+		var name string
+		for {
+			name, err = readLine(prompt, history)
+			if err != nil {
+				return err
+			}
+			if name != "" {
+				break
+			}
+		}
+		cfg.SaveFile = "saves/" + sanitizeInput(name) + ".json"
+		index, err := loadIndex()
+		if err != nil {
+			return err
+		}
+		index[name] = sanitizeInput(name)
+		saveIndex(index)
+	}
 	err = os.WriteFile(cfg.SaveFile, data, 0644)
 	if err != nil {
+		cfg.SaveFile = ""
 		return err
 	}
 	fmt.Fprintln(writer, "Pokedex saved.")
