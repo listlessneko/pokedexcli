@@ -381,17 +381,20 @@ func selectPrompt(index map[string]string) (string, error) {
 					case keyA:
 						if selected > 0 {
 							selected--
-							moveCursorUp := fmt.Sprintf("\r\x1b[%dA", len(keys)-1)
-							os.Stdout.Write([]byte(moveCursorUp))
-							drawList(keys, selected)
+						} else if selected == 0 {
+							selected = len(keys) - 1
 						}
 					case keyB:
 						if selected < len(keys)-1 {
 							selected++
-							moveCursorUp := fmt.Sprintf("\r\x1b[%dA", len(keys)-1)
-							os.Stdout.Write([]byte(moveCursorUp))
-							drawList(keys, selected)
+						} else if selected == len(keys)-1 {
+							selected = 0
 						}
+					}
+					if buf[i+2] == keyA || buf[i+2] == keyB {
+						moveCursorUp := fmt.Sprintf("\r\x1b[%dA", len(keys)-1)
+						os.Stdout.Write([]byte(moveCursorUp))
+						drawList(keys, selected)
 					}
 					i += 2
 				}
