@@ -1,10 +1,10 @@
 package main
 
 import (
-	"os"
 	"fmt"
-	"golang.org/x/term"
 	"io"
+	"os"
+	"golang.org/x/term"
 )
 
 const (
@@ -144,14 +144,9 @@ func drawList(keys []string, selected int) {
 	}
 }
 
-func selectPrompt(index fileIndex) (string, error) {
-	keys, err := sortSaveList(index)
-	if err != nil {
-		return "", err
-	}
-
+func selectPrompt(prompts []string) (string, error) {
 	selected := 0
-	drawList(keys, selected)
+	drawList(prompts, selected)
 
 	os.Stdout.Write([]byte(cursorHide))
 	defer os.Stdout.Write([]byte(cursorShow))
@@ -177,7 +172,7 @@ func selectPrompt(index fileIndex) (string, error) {
 				return "", io.EOF
 			case keyEnter:
 				os.Stdout.Write([]byte(enterSeq))
-				return index[keys[selected]], nil
+				return prompts[selected], nil
 			case keyEscape:
 				if i+2 < n && buf[i+1] == keyLSqBrckt {
 					switch buf[i+2] {
@@ -185,19 +180,19 @@ func selectPrompt(index fileIndex) (string, error) {
 						if selected > 0 {
 							selected--
 						} else if selected == 0 {
-							selected = len(keys) - 1
+							selected = len(prompts) - 1
 						}
 					case keyB:
-						if selected < len(keys)-1 {
+						if selected < len(prompts)-1 {
 							selected++
-						} else if selected == len(keys)-1 {
+						} else if selected == len(prompts)-1 {
 							selected = 0
 						}
 					}
 					if buf[i+2] == keyA || buf[i+2] == keyB {
-						moveCursorUp := fmt.Sprintf("\r\x1b[%dA", len(keys)-1)
+						moveCursorUp := fmt.Sprintf("\r\x1b[%dA", len(prompts)-1)
 						os.Stdout.Write([]byte(moveCursorUp))
-						drawList(keys, selected)
+						drawList(prompts, selected)
 					}
 					i += 2
 				}

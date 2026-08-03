@@ -20,12 +20,25 @@ func startRepl() {
 		os.Stderr.Write([]byte(err.Error()))
 	}
 	if len(index) > 0 {
-		saveFile, err := selectPrompt(index)
+		keys, err := justTheKeys(index)
 		if err != nil {
 			os.Stderr.Write([]byte(err.Error()))
 		}
-		if saveFile != "" {
-			cfg.SaveFile = "saves/" + saveFile + ".json"
+
+		prompts, err := sortSlices(keys, true)
+		if err != nil {
+			os.Stderr.Write([]byte(err.Error()))
+		}
+
+		prompts = append(prompts, "[New Save]")
+		selectedPrompt, err := selectPrompt(prompts)
+		if err != nil {
+			os.Stderr.Write([]byte(err.Error()))
+		}
+
+		saveFilename := index[selectedPrompt]
+		if saveFilename != "" {
+			cfg.SaveFile = "saves/" + saveFilename + ".json"
 		}
 	}
 
