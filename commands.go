@@ -310,12 +310,12 @@ func commandSave(cfg *config, writer io.Writer, args []string) error {
 			}
 		}
 		cfg.SaveFile = "saves/" + sanitizeInput(name) + ".json"
-		index, err := loadIndex()
+		index, err := loadSavesIndex()
 		if err != nil {
 			return err
 		}
 		index[name] = sanitizeInput(name)
-		saveIndex(index)
+		saveSavesIndex(index)
 	}
 	err = os.WriteFile(cfg.SaveFile, data, 0644)
 	if err != nil {

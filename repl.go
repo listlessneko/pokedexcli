@@ -15,7 +15,7 @@ func startRepl() {
 		Caught: make(map[string]Pokemon),
 	}
 
-	index, err := loadIndex()
+	index, err := loadSavesIndex()
 	if err != nil {
 		os.Stderr.Write([]byte(err.Error()))
 	}

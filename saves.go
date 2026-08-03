@@ -40,7 +40,7 @@ func sortSaveList(index fileIndex) ([]string, error) {
 	return keys, nil
 }
 
-func loadIndex() (fileIndex, error) {
+func loadSavesIndex() (fileIndex, error) {
 	var index fileIndex
 
 	data, err := os.ReadFile("saves/index.json")
@@ -57,7 +57,7 @@ func loadIndex() (fileIndex, error) {
 	return index, nil
 }
 
-func saveIndex(index fileIndex) error {
+func saveSavesIndex(index fileIndex) error {
 	err := os.MkdirAll("saves", 0755)
 	if err != nil {
 		return err
