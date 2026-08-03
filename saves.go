@@ -7,7 +7,7 @@ import (
 	"sort"
 )
 
-func sortSaveList(index map[string]string) ([]string, error) {
+func sortSaveList(index fileIndex) ([]string, error) {
 	var keys []string
 	if len(index) == 0 {
 		return keys, errors.New("unable to sort empty list")
@@ -21,8 +21,8 @@ func sortSaveList(index map[string]string) ([]string, error) {
 	return keys, nil
 }
 
-func loadIndex() (map[string]string, error) {
-	var index map[string]string
+func loadIndex() (fileIndex, error) {
+	var index fileIndex
 
 	data, err := os.ReadFile("saves/index.json")
 	if !os.IsNotExist(err) {
@@ -33,12 +33,12 @@ func loadIndex() (map[string]string, error) {
 			return index, err
 		}
 	} else {
-		index = make(map[string]string)
+		index = make(fileIndex)
 	}
 	return index, nil
 }
 
-func saveIndex(index map[string]string) error {
+func saveIndex(index fileIndex) error {
 	err := os.MkdirAll("saves", 0755)
 	if err != nil {
 		return err

@@ -144,7 +144,7 @@ func drawList(keys []string, selected int) {
 	}
 }
 
-func selectPrompt(index map[string]string) (string, error) {
+func selectPrompt(index fileIndex) (string, error) {
 	keys, err := sortSaveList(index)
 	if err != nil {
 		return "", err
