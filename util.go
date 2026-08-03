@@ -67,6 +67,19 @@ func capitalize(s string) string {
 	return strings.TrimSpace(final)
 }
 
+func justTheKeys[E cmp.Ordered](index map[E]E) ([]E, error) {
+	var keys []E
+
+	if len(index) == 0 {
+		return keys, errors.New("map is empty")
+	}
+
+	for k := range index {
+		keys = append(keys, k)
+	}
+	return keys, nil
+}
+
 func sortSlices[E cmp.Ordered](s []E, asc bool) ([]E, error) {
 	if len(s) == 0 {
 		return s, errors.New("unable to sort empty slice")
