@@ -2,24 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"os"
-	"sort"
 )
-
-func sortSaveList(index fileIndex) ([]string, error) {
-	var keys []string
-	if len(index) == 0 {
-		return keys, errors.New("unable to sort empty list")
-	}
-
-	for k := range index {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	keys = append(keys, "[New Save]")
-	return keys, nil
-}
 
 func loadSavesIndex() (fileIndex, error) {
 	var index fileIndex
