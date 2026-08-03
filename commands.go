@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -59,6 +60,12 @@ func getCommands() map[string]cliCommand {
 			usage:       "save",
 			description: "Save current session.",
 			callback:    commandSave,
+		},
+		"switch-profiles": {
+			name:        "switch-profiles",
+			usage:       "switch-profiles",
+			description: "Switch to a different profile.",
+			callback:    commandSwitchProfiles,
 		},
 		"delete": {
 			name:        "delete",
@@ -329,6 +336,65 @@ func commandSave(cfg *config, writer io.Writer, args []string) error {
 		return err
 	}
 	fmt.Fprintln(writer, "Pokedex saved.")
+	return nil
+}
+
+func commandSwitchProfiles(cfg *config, writer io.Writer, args []string) error {
+	index, err := loadSavesIndex()
+	if err != nil {
+		return err
+	}
+	if len(index) > 0 {
+		keys, err := justTheKeys(index)
+		if err != nil {
+			return err
+		}
+
+		prompts, err := sortSlices(keys, true)
+		if err != nil {
+			return err
+		}
+
+		prompts = append(prompts, "[Back]")
+		for {
+			selectedPrompt, err := selectPrompt(prompts)
+			if err != nil {
+				return err
+			}
+
+			saveFilename := index[selectedPrompt]
+			if saveFilename != "" {
+				saveFile := "saves/" + saveFilename + ".json"
+				if saveFile == cfg.SaveFile {
+					fmt.Fprintln(writer, "You're already using this profile.")
+					continue
+				}
+				data, err := os.ReadFile(saveFile)
+				if !os.IsNotExist(err) {
+					caughtCopy := make(map[string]Pokemon, len(cfg.Caught))
+					for k, v := range cfg.Caught {
+						caughtCopy[k] = v
+					}
+					if err == nil {
+						clear(cfg.Caught)
+						err = json.Unmarshal(data, &cfg.Caught)
+					}
+					if err != nil {
+						cfg.Caught = caughtCopy
+						fmt.Fprintln(writer, "There was an error extracting data from this profile.")
+						fmt.Fprintln(writer, err.Error())
+						continue
+					}
+					cfg.SaveFile = saveFile
+					fmt.Fprintf(writer, "Switching profile to %s...\n", selectedPrompt)
+					return nil
+				}
+				fmt.Fprintln(writer, "Profile does not exist.")
+				continue
+			}
+			break
+		}
+	}
 	return nil
 }
 
