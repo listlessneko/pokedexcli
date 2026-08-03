@@ -60,6 +60,12 @@ func getCommands() map[string]cliCommand {
 			description: "Save current session.",
 			callback:    commandSave,
 		},
+		"delete": {
+			name:        "delete",
+			usage:       "delete",
+			description: "Delete a save file.",
+			callback:    commandDelete,
+		},
 		"exit": {
 			name:        "exit",
 			usage:       "exit",
@@ -323,6 +329,61 @@ func commandSave(cfg *config, writer io.Writer, args []string) error {
 		return err
 	}
 	fmt.Fprintln(writer, "Pokedex saved.")
+	return nil
+}
+
+func commandDelete(cfg *config, writer io.Writer, args []string) error {
+	index, err := loadSavesIndex()
+	if err != nil {
+		return err
+	}
+	if len(index) > 0 {
+		keys, err := justTheKeys(index)
+		if err != nil {
+			return err
+		}
+
+		prompts, err := sortSlices(keys, true)
+		if err != nil {
+			return err
+		}
+
+		prompts = append(prompts, "[Back]")
+		for {
+			selectedPrompt, err := selectPrompt(prompts)
+			if err != nil {
+				return err
+			}
+
+			saveFilename := index[selectedPrompt]
+			if saveFilename != "" {
+				saveFile := "saves/" + saveFilename + ".json"
+				if saveFile == cfg.SaveFile {
+					fmt.Fprintln(writer, "You cannot delete the file you're currently in.")
+					continue
+				}
+				err = os.Remove(saveFile)
+				if !os.IsNotExist(err) {
+					if err == nil {
+						delete(index, selectedPrompt)
+						err = saveSavesIndex(index)
+						if err != nil {
+							fmt.Fprintln(writer, err.Error())
+						}
+						fmt.Fprintln(writer, "File deleted.")
+						return nil
+					}
+					if err != nil {
+						fmt.Fprintln(writer, "There was an error deleting this file.")
+						continue
+					}
+				}
+				fmt.Fprintln(writer, "File does not exist.")
+				continue
+			}
+			break
+		}
+	}
 	return nil
 }
 
