@@ -1,30 +1,11 @@
 package main
 
 import (
-	"cmp"
 	"encoding/json"
 	"errors"
 	"os"
-	"slices"
 	"sort"
 )
-
-func sortSlices[E cmp.Ordered](s []E, asc bool) ([]E, error) {
-	if len(s) == 0 {
-		return s, errors.New("unable to sort empty slice")
-	}
-
-	if !asc {
-		slices.SortStableFunc(s, func(i, j E) int {
-			return cmp.Compare(j, i)
-		})
-		return s, nil
-	}
-	slices.SortStableFunc(s, func(i, j E) int {
-		return cmp.Compare(i, j)
-	})
-	return s, nil
-}
 
 func sortSaveList(index fileIndex) ([]string, error) {
 	var keys []string
