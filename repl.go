@@ -39,6 +39,7 @@ func startRepl() {
 		saveFilename := index[selectedPrompt]
 		if saveFilename != "" {
 			cfg.SaveFile = "saves/" + saveFilename + ".json"
+			cfg.Prompt = "[" + selectedPrompt + "] Pokedex > "
 		}
 	}
 
@@ -52,12 +53,11 @@ func startRepl() {
 		}
 	}
 
-	prompt := "Pokedex > "
 	var history []string
 
 	for {
 
-		line, err := readLine(prompt, history)
+		line, err := readLine(cfg.Prompt, history)
 		if errors.Is(err, io.EOF) {
 			os.Stdout.Write([]byte{newLine})
 			break

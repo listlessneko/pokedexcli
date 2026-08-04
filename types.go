@@ -20,6 +20,7 @@ type config struct {
 	Cache    *pokecache.Cache
 	Caught   map[string]Pokemon
 	SaveFile string
+	Prompt   string
 }
 
 type locationAreaResp struct {

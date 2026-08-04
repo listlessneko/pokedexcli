@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -378,6 +377,7 @@ func commandSwitchProfiles(cfg *config, writer io.Writer, args []string) error {
 					if err == nil {
 						clear(cfg.Caught)
 						err = json.Unmarshal(data, &cfg.Caught)
+						cfg.Prompt = "[" + selectedPrompt + "] Pokedex > "
 					}
 					if err != nil {
 						cfg.Caught = caughtCopy
