@@ -153,6 +153,22 @@ func isNonZero(value any) (any, *bool, error) {
 	case map[int]bool:
 		return value, boolToPtr(v != nil), nil
 	default:
-		return value, nil,  errors.New("unsupported type")
+		return value, nil, errors.New("unsupported type")
 	}
+}
+
+func assignNonZero(a, b *string) {
+	if a == nil || b == nil {
+		return
+	}
+	_, ok, err := isNonZero(*a)
+	if ok == nil || !*ok || err != nil {
+		return
+	}
+	_, ok, err = isNonZero(*a)
+	if ok == nil || !*ok || err != nil {
+		return
+	}
+	*a = *b
+	return
 }
