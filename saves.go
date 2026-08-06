@@ -5,8 +5,8 @@ import (
 	"os"
 )
 
-func loadSavesIndex() (fileIndex, error) {
-	var index fileIndex
+func loadProfilesIndex() (profilesIndex, error) {
+	var index profilesIndex
 
 	data, err := os.ReadFile("saves/index.json")
 	if !os.IsNotExist(err) {
@@ -17,12 +17,12 @@ func loadSavesIndex() (fileIndex, error) {
 			return index, err
 		}
 	} else {
-		index = make(fileIndex)
+		index = make(profilesIndex)
 	}
 	return index, nil
 }
 
-func saveSavesIndex(index fileIndex) error {
+func saveProfilesIndex(index profilesIndex) error {
 	err := os.MkdirAll("saves", 0755)
 	if err != nil {
 		return err

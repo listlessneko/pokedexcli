@@ -69,7 +69,7 @@ func getCommands() map[string]cliCommand {
 		"delete": {
 			name:        "delete",
 			usage:       "delete",
-			description: "Delete a save file.",
+			description: "Delete a profile.",
 			callback:    commandDelete,
 		},
 		"exit": {
@@ -309,7 +309,7 @@ func commandSave(cfg *config, cache *cache, writer io.Writer, args []string) err
 	}
 
 	if cfg.SaveFile == "" {
-		prompt := "New save file: "
+		prompt := "New profile: "
 		var history []string
 		var name string
 		for {
@@ -322,12 +322,12 @@ func commandSave(cfg *config, cache *cache, writer io.Writer, args []string) err
 			}
 		}
 		cfg.SaveFile = "saves/" + sanitizeInput(name) + ".json"
-		index, err := loadSavesIndex()
+		index, err := loadProfilesIndex()
 		if err != nil {
 			return err
 		}
 		index[name] = sanitizeInput(name)
-		saveSavesIndex(index)
+		saveProfilesIndex(index)
 	}
 	err = os.WriteFile(cfg.SaveFile, data, 0644)
 	if err != nil {
@@ -339,7 +339,7 @@ func commandSave(cfg *config, cache *cache, writer io.Writer, args []string) err
 }
 
 func commandSwitchProfiles(cfg *config, cache *cache, writer io.Writer, args []string) error {
-	index, err := loadSavesIndex()
+	index, err := loadProfilesIndex()
 	if err != nil {
 		return err
 	}
@@ -395,7 +395,7 @@ func commandSwitchProfiles(cfg *config, cache *cache, writer io.Writer, args []s
 }
 
 func commandDelete(cfg *config, cache *cache, writer io.Writer, args []string) error {
-	index, err := loadSavesIndex()
+	index, err := loadProfilesIndex()
 	if err != nil {
 		return err
 	}
@@ -428,19 +428,19 @@ func commandDelete(cfg *config, cache *cache, writer io.Writer, args []string) e
 				if !os.IsNotExist(err) {
 					if err == nil {
 						delete(index, selectedPrompt)
-						err = saveSavesIndex(index)
+						err = saveProfilesIndex(index)
 						if err != nil {
 							fmt.Fprintln(writer, err.Error())
 						}
-						fmt.Fprintln(writer, "File deleted.")
+						fmt.Fprintln(writer, "Profile deleted.")
 						return nil
 					}
 					if err != nil {
-						fmt.Fprintln(writer, "There was an error deleting this file.")
+						fmt.Fprintln(writer, "There was an error deleting this profile.")
 						continue
 					}
 				}
-				fmt.Fprintln(writer, "File does not exist.")
+				fmt.Fprintln(writer, "Profile does not exist.")
 				continue
 			}
 			break

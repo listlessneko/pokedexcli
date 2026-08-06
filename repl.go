@@ -18,7 +18,7 @@ func startRepl() {
 		Cache: pokecache.NewCache(60 * time.Second),
 	}
 
-	index, err := loadSavesIndex()
+	index, err := loadProfilesIndex()
 	if err != nil {
 		os.Stderr.Write([]byte(err.Error()))
 	}

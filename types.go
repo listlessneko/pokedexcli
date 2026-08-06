@@ -5,7 +5,7 @@ import (
 	"io"
 )
 
-type fileIndex map[string]string
+type profilesIndex map[string]string
 
 type cliCommand struct {
 	name        string
