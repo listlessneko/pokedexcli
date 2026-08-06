@@ -11,16 +11,19 @@ type cliCommand struct {
 	name        string
 	usage       string
 	description string
-	callback    func(*config, io.Writer, []string) error
+	callback    func(*config, *cache, io.Writer, []string) error
 }
 
 type config struct {
-	Previous *string
-	Next     *string
-	Cache    *pokecache.Cache
-	Caught   map[string]Pokemon
 	SaveFile string
 	Prompt   string
+	Caught   map[string]Pokemon
+}
+
+type cache struct {
+	Cache *pokecache.Cache
+	Previous *string
+	Next *string
 }
 
 type locationAreaResp struct {

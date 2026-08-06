@@ -11,8 +11,11 @@ import (
 
 func startRepl() {
 	cfg := &config{
-		Cache:  pokecache.NewCache(5 * time.Second),
+		Prompt: "Pokedex > ",
 		Caught: make(map[string]Pokemon),
+	}
+	cache := &cache{
+		Cache: pokecache.NewCache(60 * time.Second),
 	}
 
 	index, err := loadSavesIndex()
@@ -39,14 +42,13 @@ func startRepl() {
 		saveFilename := index[selectedPrompt]
 		if saveFilename != "" {
 			cfg.SaveFile = "saves/" + saveFilename + ".json"
-			cfg.Prompt = "[" + selectedPrompt + "] Pokedex > "
 		}
 	}
 
 	data, err := os.ReadFile(cfg.SaveFile)
 	if !os.IsNotExist(err) {
 		if err == nil {
-			err = json.Unmarshal(data, &cfg.Caught)
+			err = json.Unmarshal(data, &cfg)
 		}
 		if err != nil {
 			os.Stderr.Write([]byte(err.Error()))
@@ -77,7 +79,7 @@ func startRepl() {
 		commands := getCommands()
 		command, exists := commands[userInput[0]]
 		if exists {
-			err := command.callback(cfg, os.Stdout, userInput[1:])
+			err := command.callback(cfg, cache, os.Stdout, userInput[1:])
 			if err != nil {
 				os.Stderr.Write([]byte(err.Error() + "\n"))
 			}
