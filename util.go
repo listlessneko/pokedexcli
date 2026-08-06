@@ -3,6 +3,7 @@ package main
 import (
 	"cmp"
 	"errors"
+	"fmt"
 	"slices"
 	"strings"
 	"unicode"
@@ -95,4 +96,66 @@ func sortSlices[E cmp.Ordered](s []E, asc bool) ([]E, error) {
 		return cmp.Compare(i, j)
 	})
 	return s, nil
+}
+
+func boolToPtr(b bool) *bool {
+	return &b
+}
+
+func boolToPtrEqual(a, b *bool) bool {
+	if a == nil || b == nil {
+		return a == b
+	}
+	return *a == *b
+}
+
+func isNonZero(value any) (*bool, string, error) {
+	typeName := fmt.Sprintf("%T", value)
+	switch v := value.(type) {
+	case int:
+		return boolToPtr(v != 0), typeName, nil
+	case int32:
+		return boolToPtr(v != 0), typeName, nil
+	case float32:
+		return boolToPtr(v != 0), typeName, nil
+	case float64:
+		return boolToPtr(v != 0), typeName, nil
+	case string:
+		return boolToPtr(v != ""), typeName, nil
+	case bool:
+		return boolToPtr(v), typeName, nil
+	case *int:
+		return boolToPtr(v != nil), typeName, nil
+	case *int32:
+		return boolToPtr(v != nil), typeName, nil
+	case *float32:
+		return boolToPtr(v != nil), typeName, nil
+	case *float64:
+		return boolToPtr(v != nil), typeName, nil
+	case *string:
+		return boolToPtr(v != nil), typeName, nil
+	case *bool:
+		return boolToPtr(v != nil), typeName, nil
+	case []string:
+		return boolToPtr(v != nil), typeName, nil
+	case []int:
+		return boolToPtr(v != nil), typeName, nil
+	case []bool:
+		return boolToPtr(v != nil), typeName, nil
+	case map[string]string:
+		return boolToPtr(v != nil), typeName, nil
+	case map[string]int:
+		return boolToPtr(v != nil), typeName, nil
+	case map[int]int:
+		return boolToPtr(v != nil), typeName, nil
+	case map[int]string:
+		return boolToPtr(v != nil), typeName, nil
+	case map[string]bool:
+		return boolToPtr(v != nil), typeName, nil
+	case map[int]bool:
+		return boolToPtr(v != nil), typeName, nil
+	default:
+		err := errors.New("unrecognized type")
+		return nil, typeName, err
+	}
 }
