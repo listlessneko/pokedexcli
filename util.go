@@ -3,7 +3,6 @@ package main
 import (
 	"cmp"
 	"errors"
-	"fmt"
 	"slices"
 	"strings"
 	"unicode"
@@ -109,53 +108,51 @@ func boolToPtrEqual(a, b *bool) bool {
 	return *a == *b
 }
 
-func isNonZero(value any) (*bool, string, error) {
-	typeName := fmt.Sprintf("%T", value)
+func isNonZero(value any) (any, *bool, error) {
 	switch v := value.(type) {
 	case int:
-		return boolToPtr(v != 0), typeName, nil
+		return value, boolToPtr(v != 0), nil 
 	case int32:
-		return boolToPtr(v != 0), typeName, nil
+		return value, boolToPtr(v != 0), nil
 	case float32:
-		return boolToPtr(v != 0), typeName, nil
+		return value, boolToPtr(v != 0), nil
 	case float64:
-		return boolToPtr(v != 0), typeName, nil
+		return value, boolToPtr(v != 0), nil
 	case string:
-		return boolToPtr(v != ""), typeName, nil
+		return value, boolToPtr(v != ""), nil
 	case bool:
-		return boolToPtr(v), typeName, nil
+		return value, boolToPtr(v), nil
 	case *int:
-		return boolToPtr(v != nil), typeName, nil
+		return value, boolToPtr(v != nil), nil
 	case *int32:
-		return boolToPtr(v != nil), typeName, nil
+		return value, boolToPtr(v != nil), nil
 	case *float32:
-		return boolToPtr(v != nil), typeName, nil
+		return value, boolToPtr(v != nil), nil
 	case *float64:
-		return boolToPtr(v != nil), typeName, nil
+		return value, boolToPtr(v != nil), nil
 	case *string:
-		return boolToPtr(v != nil), typeName, nil
+		return value, boolToPtr(v != nil), nil
 	case *bool:
-		return boolToPtr(v != nil), typeName, nil
+		return value, boolToPtr(v != nil), nil
 	case []string:
-		return boolToPtr(v != nil), typeName, nil
+		return value, boolToPtr(v != nil), nil
 	case []int:
-		return boolToPtr(v != nil), typeName, nil
+		return value, boolToPtr(v != nil), nil
 	case []bool:
-		return boolToPtr(v != nil), typeName, nil
+		return value, boolToPtr(v != nil), nil
 	case map[string]string:
-		return boolToPtr(v != nil), typeName, nil
+		return value, boolToPtr(v != nil), nil
 	case map[string]int:
-		return boolToPtr(v != nil), typeName, nil
+		return value, boolToPtr(v != nil), nil
 	case map[int]int:
-		return boolToPtr(v != nil), typeName, nil
+		return value, boolToPtr(v != nil), nil
 	case map[int]string:
-		return boolToPtr(v != nil), typeName, nil
+		return value, boolToPtr(v != nil), nil
 	case map[string]bool:
-		return boolToPtr(v != nil), typeName, nil
+		return value, boolToPtr(v != nil), nil
 	case map[int]bool:
-		return boolToPtr(v != nil), typeName, nil
+		return value, boolToPtr(v != nil), nil
 	default:
-		err := errors.New("unrecognized type")
-		return nil, typeName, err
+		return value, nil,  errors.New("unsupported type")
 	}
 }

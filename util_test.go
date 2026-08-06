@@ -1,6 +1,7 @@
 package main
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -101,9 +102,9 @@ func TestCapitalize(t *testing.T) {
 
 func TestIsNonZero(t *testing.T) {
 	type expected struct {
-		nonZero  *bool
-		typeName string
-		err      error
+		value   any
+		boolPtr *bool
+		err     error
 	}
 
 	cases := []struct {
@@ -113,41 +114,41 @@ func TestIsNonZero(t *testing.T) {
 		{
 			input: "",
 			expected: expected{
-				nonZero:  boolToPtr(false),
-				typeName: "string",
-				err: nil,
+				value:   "",
+				boolPtr: boolToPtr(false),
+				err:     nil,
 			},
 		},
 		{
 			input: "test",
 			expected: expected{
-				nonZero:  boolToPtr(true),
-				typeName: "string",
-				err: nil,
+				value:   "test",
+				boolPtr: boolToPtr(true),
+				err:     nil,
 			},
 		},
 		{
 			input: 1,
 			expected: expected{
-				nonZero:  boolToPtr(true),
-				typeName: "int",
-				err: nil,
+				value:   1,
+				boolPtr: boolToPtr(true),
+				err:     nil,
 			},
 		},
 		{
 			input: true,
 			expected: expected{
-				nonZero:  boolToPtr(true),
-				typeName: "bool",
-				err: nil,
+				value:   true,
+				boolPtr: boolToPtr(true),
+				err:     nil,
 			},
 		},
 		{
 			input: []int{1, 2, 3},
 			expected: expected{
-				nonZero:  boolToPtr(true),
-				typeName: "[]int",
-				err: nil,
+				value:   []int{1, 2, 3},
+				boolPtr: boolToPtr(true),
+				err:     nil,
 			},
 		},
 		{
@@ -157,22 +158,26 @@ func TestIsNonZero(t *testing.T) {
 				"Red":         "red",
 			},
 			expected: expected{
-				nonZero:  boolToPtr(true),
-				typeName: "map[string]string",
-				err: nil,
+				value: map[string]string{
+					"Ash Ketchum": "ash_ketchum",
+					"Gary Oak":    "gary_oak",
+					"Red":         "red",
+				},
+				boolPtr: boolToPtr(true),
+				err:      nil,
 			},
 		},
 	}
 
 	for _, c := range cases {
-		actualNonZero, actualTypeName, actualErr := isNonZero(c.input)
+		actualValue, actualBoolPtr, actualErr := isNonZero(c.input)
 		expected := c.expected
 
-		if !boolToPtrEqual(actualNonZero, expected.nonZero) {
-			t.Errorf("actual nonZero (%v) does not match expected nonZero (%v)", *actualNonZero, *expected.nonZero)
-		} 
-		if actualTypeName != expected.typeName {
-			t.Errorf("actual typeName (%s) does not match expected typeName (%s)", actualTypeName, expected.typeName)
+		if !reflect.DeepEqual(actualValue, expected.value) {
+			t.Errorf("actual value (%v) does not match expected value (%v)", *actualBoolPtr, *expected.boolPtr)
+		}
+		if !boolToPtrEqual(actualBoolPtr, expected.boolPtr) {
+			t.Errorf("actual bool (%v) does not match expected bool (%v)", *actualBoolPtr, *expected.boolPtr)
 		}
 		if actualErr != expected.err {
 			t.Errorf("actual err (%v) does not match expected err (%v)", actualErr, expected.err)
