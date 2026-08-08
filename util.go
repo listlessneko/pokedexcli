@@ -210,3 +210,15 @@ func (t *trie) searchLevel(currentLevel *trieNode, currentPrefix string, words [
 	}
 	return words, nil
 }
+
+func (t *trie) searchByPrefix(prefix string) ([]string, error) {
+	var collectedWords []string
+	currentLevel := t.Root
+	for _, letter := range prefix {
+		if currentLevel.Children == nil || currentLevel.Children[letter] == nil {
+			return collectedWords, errors.New("no words found")
+		}
+		currentLevel = currentLevel.Children[letter]
+	}
+	return t.searchLevel(currentLevel, prefix, collectedWords)
+}
