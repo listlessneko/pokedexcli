@@ -177,11 +177,11 @@ func newTrie() *trie {
 	return &trie{Root: &trieNode{}}
 }
 
-func (t *trie) Add(word string) {
+func (t *trie) add(word string) {
 	currentLevel := t.Root
 	for _, letter := range word {
 		if currentLevel.Children == nil {
-			currentLevel.Children = make(TrieNode)
+			currentLevel.Children = make(children)
 		}
 		if currentLevel.Children[letter] == nil {
 			currentLevel.Children[letter] = &trieNode{}
