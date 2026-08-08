@@ -190,3 +190,23 @@ func (t *trie) add(word string) {
 	}
 	currentLevel.End = true
 }
+
+func (t *trie) searchLevel(currentLevel *trieNode, currentPrefix string, words []string) ([]string, error) {
+	if currentLevel.End {
+		words = append(words, currentPrefix)
+	}
+	keys, err := justTheKeys(currentLevel.Children)
+	if err == nil {
+		return words, err
+	}
+	sortedKeys, err := sortSlices(keys, true)
+	if err == nil {
+		return words, err
+	}
+	for _, letter := range sortedKeys {
+		if !currentLevel.End {
+			t.searchLevel(currentLevel.Children[letter], currentPrefix + string(letter), words)
+		}
+	}
+	return words, nil
+}
