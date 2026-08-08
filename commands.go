@@ -435,10 +435,8 @@ func commandDelete(cfg *config, cache *cache, writer io.Writer, args []string) e
 						fmt.Fprintln(writer, "Profile deleted.")
 						return nil
 					}
-					if err != nil {
-						fmt.Fprintln(writer, "There was an error deleting this profile.")
-						continue
-					}
+					fmt.Fprintln(writer, "There was an error deleting this profile.")
+					continue
 				}
 				fmt.Fprintln(writer, "Profile does not exist.")
 				continue
