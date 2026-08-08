@@ -111,7 +111,7 @@ func boolToPtrEqual(a, b *bool) bool {
 func isNonZero(value any) (any, *bool, error) {
 	switch v := value.(type) {
 	case int:
-		return value, boolToPtr(v != 0), nil 
+		return value, boolToPtr(v != 0), nil
 	case int32:
 		return value, boolToPtr(v != 0), nil
 	case float32:
@@ -171,4 +171,22 @@ func assignNonZero(a, b *string) {
 	}
 	*a = *b
 	return
+}
+
+func newTrie() *trie {
+	return &trie{Root: &trieNode{}}
+}
+
+func (t *trie) Add(word string) {
+	currentLevel := t.Root
+	for _, letter := range word {
+		if currentLevel.Children == nil {
+			currentLevel.Children = make(TrieNode)
+		}
+		if currentLevel.Children[letter] == nil {
+			currentLevel.Children[letter] = &trieNode{}
+		}
+		currentLevel = currentLevel.Children[letter]
+	}
+	currentLevel.End = true
 }
