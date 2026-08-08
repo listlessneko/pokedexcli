@@ -53,9 +53,10 @@ func TestCommandInspect(t *testing.T) {
 
 	for _, c := range cases {
 		cfg := &config{Caught: c.caught}
+		cache := &cache{}
 
 		var buf bytes.Buffer
-		err := commandInspect(cfg, &buf, c.args)
+		err := commandInspect(cfg, cache, &buf, c.args)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -94,9 +95,10 @@ func TestCommandPokedex(t *testing.T) {
 
 	for _, c := range cases {
 		cfg := &config{Caught: c.caught}
+		cache := &cache{}
 
 		var buf bytes.Buffer
-		err := commandPokedex(cfg, &buf, []string{""})
+		err := commandPokedex(cfg, cache, &buf, []string{""})
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
