@@ -97,10 +97,6 @@ func sortSlices[E cmp.Ordered](s []E, asc bool) ([]E, error) {
 	return s, nil
 }
 
-func boolToPtr(b bool) *bool {
-	return &b
-}
-
 func boolToPtrEqual(a, b *bool) bool {
 	if a == nil || b == nil {
 		return a == b
@@ -111,47 +107,47 @@ func boolToPtrEqual(a, b *bool) bool {
 func isNonZero(value any) (any, *bool, error) {
 	switch v := value.(type) {
 	case int:
-		return value, boolToPtr(v != 0), nil 
+		return value, new(v != 0), nil 
 	case int32:
-		return value, boolToPtr(v != 0), nil
+		return value, new(v != 0), nil
 	case float32:
-		return value, boolToPtr(v != 0), nil
+		return value, new(v != 0), nil
 	case float64:
-		return value, boolToPtr(v != 0), nil
+		return value, new(v != 0), nil
 	case string:
-		return value, boolToPtr(v != ""), nil
+		return value, new(v != ""), nil
 	case bool:
-		return value, boolToPtr(v), nil
+		return value, new(v), nil
 	case *int:
-		return value, boolToPtr(v != nil), nil
+		return value, new(v != nil), nil
 	case *int32:
-		return value, boolToPtr(v != nil), nil
+		return value, new(v != nil), nil
 	case *float32:
-		return value, boolToPtr(v != nil), nil
+		return value, new(v != nil), nil
 	case *float64:
-		return value, boolToPtr(v != nil), nil
+		return value, new(v != nil), nil
 	case *string:
-		return value, boolToPtr(v != nil), nil
+		return value, new(v != nil), nil
 	case *bool:
-		return value, boolToPtr(v != nil), nil
+		return value, new(v != nil), nil
 	case []string:
-		return value, boolToPtr(v != nil), nil
+		return value, new(v != nil), nil
 	case []int:
-		return value, boolToPtr(v != nil), nil
+		return value, new(v != nil), nil
 	case []bool:
-		return value, boolToPtr(v != nil), nil
+		return value, new(v != nil), nil
 	case map[string]string:
-		return value, boolToPtr(v != nil), nil
+		return value, new(v != nil), nil
 	case map[string]int:
-		return value, boolToPtr(v != nil), nil
+		return value, new(v != nil), nil
 	case map[int]int:
-		return value, boolToPtr(v != nil), nil
+		return value, new(v != nil), nil
 	case map[int]string:
-		return value, boolToPtr(v != nil), nil
+		return value, new(v != nil), nil
 	case map[string]bool:
-		return value, boolToPtr(v != nil), nil
+		return value, new(v != nil), nil
 	case map[int]bool:
-		return value, boolToPtr(v != nil), nil
+		return value, new(v != nil), nil
 	default:
 		return value, nil, errors.New("unsupported type")
 	}
@@ -170,5 +166,4 @@ func assignNonZero(a, b *string) {
 		return
 	}
 	*a = *b
-	return
 }
