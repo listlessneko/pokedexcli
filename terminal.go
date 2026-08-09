@@ -44,7 +44,7 @@ func redraw(new []byte, cursor int) {
 	os.Stdout.Write(new)
 }
 
-func deleteCharBeforeCursor(cursor *int, currentLine []byte) []byte {
+func deleteCharBeforeCursor(currentLine []byte, cursor *int) []byte {
 	if *cursor > 0 {
 		copy(currentLine[*cursor-1:], currentLine[*cursor:])
 		currentLine = currentLine[:len(currentLine)-1]
@@ -57,6 +57,44 @@ func deleteCharBeforeCursor(cursor *int, currentLine []byte) []byte {
 		os.Stdout.Write([]byte(seq))
 	}
 	return currentLine
+}
+
+func moveUpHistory(currentLine []byte, cursor *int, history []string, historyIndex *int) []byte {
+	if *historyIndex > 0 {
+		*historyIndex -= 1
+		currentLine = []byte(history[*historyIndex])
+		redraw(currentLine, *cursor)
+		*cursor = len(currentLine)
+	}
+	return currentLine
+}
+
+func moveDownHistory(currentLine []byte, cursor *int, history []string, historyIndex *int) []byte {
+	if *historyIndex < len(history) {
+		*historyIndex += 1
+		if *historyIndex == len(history) {
+			currentLine = []byte("")
+		} else {
+			currentLine = []byte(history[*historyIndex])
+		}
+		redraw(currentLine, *cursor)
+		*cursor = len(currentLine)
+	}
+	return currentLine
+}
+
+func moveCursorFwd(cursor *int, currentLine []byte) {
+	if *cursor < len(currentLine) {
+		*cursor += 1
+		os.Stdout.Write([]byte(cursorFwd))
+	}
+}
+
+func moveCursorBckwd(cursor *int, currentLine []byte) {
+	if *cursor > 0 {
+		*cursor -= 1
+		os.Stdout.Write([]byte(cursorBckwd))
+	}
 }
 
 func readLine(prompt string, history []string, autocomplete *trie) (string, error) {
@@ -88,39 +126,19 @@ func readLine(prompt string, history []string, autocomplete *trie) (string, erro
 				os.Stdout.Write([]byte(enterSeq))
 				return string(currentLine), nil
 			case keyBackspace:
-				currentLine = deleteCharBeforeCursor(&cursor, currentLine)
+				currentLine = deleteCharBeforeCursor(currentLine, &cursor)
 				continue
 			case keyEscape:
 				if i+2 < n && buf[i+1] == keyLSqBrckt {
 					switch buf[i+2] {
 					case keyA:
-						if historyIndex > 0 {
-							historyIndex -= 1
-							currentLine = []byte(history[historyIndex])
-							redraw(currentLine, cursor)
-							cursor = len(currentLine)
-						}
+						currentLine = moveUpHistory(currentLine, &cursor, history, &historyIndex)
 					case keyB:
-						if historyIndex < len(history) {
-							historyIndex += 1
-							if historyIndex == len(history) {
-								currentLine = []byte("")
-							} else {
-								currentLine = []byte(history[historyIndex])
-							}
-							redraw(currentLine, cursor)
-							cursor = len(currentLine)
-						}
+						currentLine = moveDownHistory(currentLine, &cursor, history, &historyIndex)
 					case keyC:
-						if cursor < len(currentLine) {
-							cursor += 1
-							os.Stdout.Write([]byte(cursorFwd))
-						}
+						moveCursorFwd(&cursor, currentLine)
 					case keyD:
-						if cursor > 0 {
-							cursor -= 1
-							os.Stdout.Write([]byte(cursorBckwd))
-						}
+						moveCursorBckwd(&cursor, currentLine)
 					}
 					i += 2
 				}
