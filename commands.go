@@ -358,6 +358,7 @@ func commandSave(app *app) error {
 			}
 		}
 		app.config.SaveFile = "saves/" + sanitizeInput(name) + ".json"
+		app.config.Prompt = "[" + name + "] Pokedex > "
 		index, err := loadProfilesIndex()
 		if err != nil {
 			return err
@@ -455,7 +456,6 @@ func commandSwitchProfiles(app *app) error {
 						continue
 					}
 					*app.config = tempConfig
-					app.config.Prompt = "[" + selectedPrompt + "] Pokedex > "
 					app.config.SaveFile = saveFile
 					fmt.Fprintf(app.writer, "Switching profile to %s...\n", selectedPrompt)
 					return nil
