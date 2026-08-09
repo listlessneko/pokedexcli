@@ -73,6 +73,10 @@ func capitalize(s string) string {
 	return strings.TrimSpace(final)
 }
 
+func save_ify(name string) string {
+	return fmt.Sprintf("saves/%s.json", sanitizeInput(name))
+}
+
 func promptify(name string) string {
 	return fmt.Sprintf("[%s] Pokedex > ", name)
 }
