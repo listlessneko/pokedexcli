@@ -196,16 +196,16 @@ func (t *trie) searchLevel(currentLevel *trieNode, currentPrefix string, words [
 		words = append(words, currentPrefix)
 	}
 	keys, err := justTheKeys(currentLevel.Children)
-	if err == nil {
+	if err != nil {
 		return words
 	}
 	sortedKeys, err := sortSlices(keys, true)
-	if err == nil {
+	if err != nil {
 		return words
 	}
 	for _, letter := range sortedKeys {
 		if !currentLevel.End {
-			t.searchLevel(currentLevel.Children[letter], currentPrefix + string(letter), words)
+			words = t.searchLevel(currentLevel.Children[letter], currentPrefix + string(letter), words)
 		}
 	}
 	return words
