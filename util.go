@@ -191,32 +191,32 @@ func (t *trie) add(word string) {
 	currentLevel.End = true
 }
 
-func (t *trie) searchLevel(currentLevel *trieNode, currentPrefix string, words []string) ([]string, error) {
+func (t *trie) searchLevel(currentLevel *trieNode, currentPrefix string, words []string) []string {
 	if currentLevel.End {
 		words = append(words, currentPrefix)
 	}
 	keys, err := justTheKeys(currentLevel.Children)
 	if err == nil {
-		return words, err
+		return words
 	}
 	sortedKeys, err := sortSlices(keys, true)
 	if err == nil {
-		return words, err
+		return words
 	}
 	for _, letter := range sortedKeys {
 		if !currentLevel.End {
 			t.searchLevel(currentLevel.Children[letter], currentPrefix + string(letter), words)
 		}
 	}
-	return words, nil
+	return words
 }
 
-func (t *trie) searchByPrefix(prefix string) ([]string, error) {
+func (t *trie) searchByPrefix(prefix string) []string {
 	var collectedWords []string
 	currentLevel := t.Root
 	for _, letter := range prefix {
 		if currentLevel.Children == nil || currentLevel.Children[letter] == nil {
-			return collectedWords, errors.New("no words found")
+			return collectedWords
 		}
 		currentLevel = currentLevel.Children[letter]
 	}
