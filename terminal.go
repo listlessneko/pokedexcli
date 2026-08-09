@@ -169,6 +169,29 @@ func drawList(keys []string, selected int) {
 	}
 }
 
+func moveDownPromptSelector(prompts []string, selected *int) {
+	if *selected < len(prompts)-1 {
+		*selected++
+	} else if *selected == len(prompts)-1 {
+		*selected = 0
+	}
+	moveCursorUp := fmt.Sprintf("\r\x1b[%dA", len(prompts)-1)
+	os.Stdout.Write([]byte(moveCursorUp))
+	drawList(prompts, *selected)
+}
+
+func moveUpPromptSelector(prompts []string, selected *int) {
+	if *selected > 0 {
+		*selected--
+	} else if *selected == 0 {
+		*selected = len(prompts) - 1
+	}
+	moveCursorUp := fmt.Sprintf("\r\x1b[%dA", len(prompts)-1)
+	os.Stdout.Write([]byte(moveCursorUp))
+	drawList(prompts, *selected)
+
+}
+
 func selectPrompt(prompts []string) (string, error) {
 	selected := 0
 	drawList(prompts, selected)
@@ -199,43 +222,16 @@ func selectPrompt(prompts []string) (string, error) {
 				os.Stdout.Write([]byte(enterSeq))
 				return prompts[selected], nil
 			case keyj:
-				if selected < len(prompts)-1 {
-					selected++
-				} else if selected == len(prompts)-1 {
-					selected = 0
-				}
-				moveCursorUp := fmt.Sprintf("\r\x1b[%dA", len(prompts)-1)
-				os.Stdout.Write([]byte(moveCursorUp))
-				drawList(prompts, selected)
+				moveDownPromptSelector(prompts, &selected)
 			case keyk:
-				if selected > 0 {
-					selected--
-				} else if selected == 0 {
-					selected = len(prompts) - 1
-				}
-				moveCursorUp := fmt.Sprintf("\r\x1b[%dA", len(prompts)-1)
-				os.Stdout.Write([]byte(moveCursorUp))
-				drawList(prompts, selected)
+				moveUpPromptSelector(prompts, &selected)
 			case keyEscape:
 				if i+2 < n && buf[i+1] == keyLSqBrckt {
 					switch buf[i+2] {
 					case keyB:
-						if selected < len(prompts)-1 {
-							selected++
-						} else if selected == len(prompts)-1 {
-							selected = 0
-						}
+						moveDownPromptSelector(prompts, &selected)
 					case keyA:
-						if selected > 0 {
-							selected--
-						} else if selected == 0 {
-							selected = len(prompts) - 1
-						}
-					}
-					if buf[i+2] == keyA || buf[i+2] == keyB {
-						moveCursorUp := fmt.Sprintf("\r\x1b[%dA", len(prompts)-1)
-						os.Stdout.Write([]byte(moveCursorUp))
-						drawList(prompts, selected)
+						moveUpPromptSelector(prompts, &selected)
 					}
 					i += 2
 				}
