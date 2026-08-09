@@ -40,7 +40,7 @@ func redraw(new []byte, cursor int) {
 	os.Stdout.Write(new)
 }
 
-func readLine(prompt string, history []string) (string, error) {
+func readLine(prompt string, history []string, autocomplete *trie) (string, error) {
 	os.Stdout.Write([]byte(prompt))
 
 	fd := int(os.Stdin.Fd())

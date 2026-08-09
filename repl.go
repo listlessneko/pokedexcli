@@ -56,15 +56,14 @@ func startRepl() {
 	}
 
 	var history []string
-	var autocomplete trie
+	autocomplete := newTrie()
 	commands := getCommands()
 	for command, _ := range commands {
 		autocomplete.add(command)
 	}
 
 	for {
-
-		line, err := readLine(cfg.Prompt, history)
+		line, err := readLine(cfg.Prompt, history, autocomplete)
 		if errors.Is(err, io.EOF) {
 			os.Stdout.Write([]byte{newLine})
 			break
