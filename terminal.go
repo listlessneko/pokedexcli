@@ -118,7 +118,18 @@ func readLine(prompt string, history []string, autocomplete *trie) (string, erro
 				continue
 			case keyTab:
 				commands := autocomplete.searchByPrefix(string(currentLine))
-				if len(commands) == 0 {
+				if len(commands) > 1 {
+					os.Stdout.Write([]byte(enterSeq))
+					for i, command := range commands {
+						os.Stdout.Write([]byte(command))
+						if i < len(commands)-1 {
+							os.Stdout.Write([]byte("  "))
+						}
+					}
+					os.Stdout.Write([]byte(enterSeq))
+					os.Stdout.Write([]byte(prompt))
+					os.Stdout.Write([]byte(currentLine))
+					continue
 				} else if len(commands) == 1 {
 					currentLine = []byte(commands[0])
 					redraw(currentLine, cursor)
