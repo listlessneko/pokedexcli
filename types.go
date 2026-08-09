@@ -36,10 +36,10 @@ type cache struct {
 	Next     *string
 }
 
-type children map[rune]*trieNode
+type trieChildren map[rune]*trieNode
 
 type trieNode struct {
-	Children children
+	Children trieChildren
 	End      bool
 }
 

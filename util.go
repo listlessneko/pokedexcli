@@ -190,7 +190,7 @@ func (t *trie) add(word string) {
 	currentLevel := t.Root
 	for _, letter := range word {
 		if currentLevel.Children == nil {
-			currentLevel.Children = make(children)
+			currentLevel.Children = make(trieChildren)
 		}
 		if currentLevel.Children[letter] == nil {
 			currentLevel.Children[letter] = &trieNode{}
