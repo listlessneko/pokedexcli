@@ -116,6 +116,15 @@ func readLine(prompt string, history []string, autocomplete *trie) (string, erro
 					i += 2
 				}
 				continue
+			case keyTab:
+				commands := autocomplete.searchByPrefix(string(currentLine))
+				if len(commands) == 0 {
+				} else if len(commands) == 1 {
+					currentLine = []byte(commands[0])
+					redraw(currentLine, cursor)
+					cursor = len(currentLine)
+				}
+				continue
 			}
 			currentLine = append(currentLine, 0)
 			copy(currentLine[cursor+1:], currentLine[cursor:])
