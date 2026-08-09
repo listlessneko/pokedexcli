@@ -3,13 +3,14 @@ package main
 import (
 	"cmp"
 	"errors"
+	"fmt"
 	"slices"
 	"strings"
 	"unicode"
 )
 
 const (
-	asc sortOrder = true
+	asc  sortOrder = true
 	desc sortOrder = false
 )
 
@@ -72,6 +73,10 @@ func capitalize(s string) string {
 	return strings.TrimSpace(final)
 }
 
+func promptify(name string) string {
+	return fmt.Sprintf("[%s] Pokedex > ", name)
+}
+
 func justTheKeys[K cmp.Ordered, V any](index map[K]V) []K {
 	var keys []K
 
@@ -112,7 +117,7 @@ func boolToPtrEqual(a, b *bool) bool {
 func isNonZero(value any) (any, *bool, error) {
 	switch v := value.(type) {
 	case int:
-		return value, new(v != 0), nil 
+		return value, new(v != 0), nil
 	case int32:
 		return value, new(v != 0), nil
 	case float32:
@@ -199,7 +204,7 @@ func (t *trie) searchLevel(currentLevel *trieNode, currentPrefix string, words [
 	sortedKeys := sortSlices(keys, true)
 	for _, letter := range sortedKeys {
 		if !currentLevel.End {
-			words = t.searchLevel(currentLevel.Children[letter], currentPrefix + string(letter), words)
+			words = t.searchLevel(currentLevel.Children[letter], currentPrefix+string(letter), words)
 		}
 	}
 	return words
