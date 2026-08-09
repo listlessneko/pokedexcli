@@ -312,8 +312,9 @@ func commandSave(cfg *config, cache *cache, writer io.Writer, args []string) err
 		prompt := "New profile: "
 		var history []string
 		var name string
+		var autocomplete trie
 		for {
-			name, err = readLine(prompt, history)
+			name, err = readLine(prompt, history, &autocomplete)
 			if err != nil {
 				return err
 			}

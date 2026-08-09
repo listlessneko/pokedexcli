@@ -67,8 +67,8 @@ func capitalize(s string) string {
 	return strings.TrimSpace(final)
 }
 
-func justTheKeys[E cmp.Ordered](index map[E]E) ([]E, error) {
-	var keys []E
+func justTheKeys[K cmp.Ordered, V any](index map[K]V) ([]K, error) {
+	var keys []K
 
 	if len(index) == 0 {
 		return keys, errors.New("map is empty")
@@ -166,4 +166,54 @@ func assignNonZero(a, b *string) {
 		return
 	}
 	*a = *b
+}
+
+func newTrie() *trie {
+	return &trie{Root: &trieNode{}}
+}
+
+func (t *trie) add(word string) {
+	currentLevel := t.Root
+	for _, letter := range word {
+		if currentLevel.Children == nil {
+			currentLevel.Children = make(children)
+		}
+		if currentLevel.Children[letter] == nil {
+			currentLevel.Children[letter] = &trieNode{}
+		}
+		currentLevel = currentLevel.Children[letter]
+	}
+	currentLevel.End = true
+}
+
+func (t *trie) searchLevel(currentLevel *trieNode, currentPrefix string, words []string) []string {
+	if currentLevel.End {
+		words = append(words, currentPrefix)
+	}
+	keys, err := justTheKeys(currentLevel.Children)
+	if err != nil {
+		return words
+	}
+	sortedKeys, err := sortSlices(keys, true)
+	if err != nil {
+		return words
+	}
+	for _, letter := range sortedKeys {
+		if !currentLevel.End {
+			words = t.searchLevel(currentLevel.Children[letter], currentPrefix + string(letter), words)
+		}
+	}
+	return words
+}
+
+func (t *trie) searchByPrefix(prefix string) []string {
+	var collectedWords []string
+	currentLevel := t.Root
+	for _, letter := range prefix {
+		if currentLevel.Children == nil || currentLevel.Children[letter] == nil {
+			return collectedWords
+		}
+		currentLevel = currentLevel.Children[letter]
+	}
+	return t.searchLevel(currentLevel, prefix, collectedWords)
 }

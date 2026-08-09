@@ -21,9 +21,20 @@ type config struct {
 }
 
 type cache struct {
-	Cache *pokecache.Cache
+	Cache    *pokecache.Cache
 	Previous *string
-	Next *string
+	Next     *string
+}
+
+type children map[rune]*trieNode
+
+type trieNode struct {
+	Children children
+	End      bool
+}
+
+type trie struct {
+	Root *trieNode
 }
 
 type locationAreaResp struct {

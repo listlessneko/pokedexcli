@@ -2,14 +2,15 @@ package main
 
 import (
 	"fmt"
+	"golang.org/x/term"
 	"io"
 	"os"
-	"golang.org/x/term"
 )
 
 const (
 	bufSize      = 3
 	newLine      = '\x0a'
+	keyTab       = '\x09'
 	keyEnter     = '\x0d'
 	keyBackspace = '\x7f'
 	keyCtrlC     = '\x03'
@@ -39,7 +40,7 @@ func redraw(new []byte, cursor int) {
 	os.Stdout.Write(new)
 }
 
-func readLine(prompt string, history []string) (string, error) {
+func readLine(prompt string, history []string, autocomplete *trie) (string, error) {
 	os.Stdout.Write([]byte(prompt))
 
 	fd := int(os.Stdin.Fd())
@@ -113,6 +114,15 @@ func readLine(prompt string, history []string) (string, error) {
 						}
 					}
 					i += 2
+				}
+				continue
+			case keyTab:
+				commands := autocomplete.searchByPrefix(string(currentLine))
+				if len(commands) == 0 {
+				} else if len(commands) == 1 {
+					currentLine = []byte(commands[0])
+					redraw(currentLine, cursor)
+					cursor = len(currentLine)
 				}
 				continue
 			}
