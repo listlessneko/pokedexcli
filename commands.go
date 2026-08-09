@@ -388,7 +388,7 @@ func commandChangeProfileName(app *app) error {
 	}
 
 	delete(index, app.config.Name)
-	index[newName] = newSaveFile
+	index[newName] = sanitizeInput(newName)
 	saveProfilesIndex(index)
 
 	app.config.Name = newName
@@ -425,7 +425,7 @@ func commandSave(app *app) error {
 			}
 		}
 		app.config.Name = name
-		app.config.SaveFile = "saves/" + sanitizeInput(name) + ".json"
+		app.config.SaveFile = save_ify(name)
 		app.config.Prompt = promptify(name)
 		index, err := loadProfilesIndex()
 		if err != nil {
@@ -459,14 +459,14 @@ func commandDelete(app *app) error {
 				return err
 			}
 
-			saveFilename := index[selectedPrompt]
-			if saveFilename != "" {
-				saveFile := "saves/" + saveFilename + ".json"
-				if saveFile == app.config.SaveFile {
+			selectedFilename := index[selectedPrompt]
+			if selectedFilename != "" {
+				selectedSaveFile := save_ify(selectedFilename)
+				if selectedSaveFile == app.config.SaveFile {
 					fmt.Fprintln(app.writer, "You cannot delete the file you're currently in.")
 					continue
 				}
-				err = os.Remove(saveFile)
+				err = os.Remove(selectedSaveFile)
 				if !os.IsNotExist(err) {
 					if err == nil {
 						delete(index, selectedPrompt)
