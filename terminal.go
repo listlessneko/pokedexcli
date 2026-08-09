@@ -21,6 +21,10 @@ const (
 	keyB         = '\x42'
 	keyC         = '\x43'
 	keyD         = '\x44'
+	keyh         = '\x68'
+	keyj         = '\x6A'
+	keyk         = '\x6B'
+	keyl         = '\x6C'
 	enterSeq     = "\x0d\x0a"
 	eraseSeq     = "\x1b[K"
 	cursorHide   = "\x1b[?25l"
@@ -194,20 +198,38 @@ func selectPrompt(prompts []string) (string, error) {
 			case keyEnter:
 				os.Stdout.Write([]byte(enterSeq))
 				return prompts[selected], nil
+			case keyj:
+				if selected < len(prompts)-1 {
+					selected++
+				} else if selected == len(prompts)-1 {
+					selected = 0
+				}
+				moveCursorUp := fmt.Sprintf("\r\x1b[%dA", len(prompts)-1)
+				os.Stdout.Write([]byte(moveCursorUp))
+				drawList(prompts, selected)
+			case keyk:
+				if selected > 0 {
+					selected--
+				} else if selected == 0 {
+					selected = len(prompts) - 1
+				}
+				moveCursorUp := fmt.Sprintf("\r\x1b[%dA", len(prompts)-1)
+				os.Stdout.Write([]byte(moveCursorUp))
+				drawList(prompts, selected)
 			case keyEscape:
 				if i+2 < n && buf[i+1] == keyLSqBrckt {
 					switch buf[i+2] {
-					case keyA:
-						if selected > 0 {
-							selected--
-						} else if selected == 0 {
-							selected = len(prompts) - 1
-						}
 					case keyB:
 						if selected < len(prompts)-1 {
 							selected++
 						} else if selected == len(prompts)-1 {
 							selected = 0
+						}
+					case keyA:
+						if selected > 0 {
+							selected--
+						} else if selected == 0 {
+							selected = len(prompts) - 1
 						}
 					}
 					if buf[i+2] == keyA || buf[i+2] == keyB {
