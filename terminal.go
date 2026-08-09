@@ -111,7 +111,7 @@ func moveCursorBckwd(cursor *int, currentLine []byte) {
 	}
 }
 
-func drawCommandsWithPrefix(currentLine []byte, prompt string, cursor int, commands []string) {
+func drawCommandsWithPrefix(currentLine []byte, prompt string, commands []string) {
 	os.Stdout.Write([]byte(enterSeq))
 	for i, command := range commands {
 		os.Stdout.Write([]byte(command))
@@ -180,7 +180,7 @@ func readLine(prompt string, history []string, autocomplete *trie) (string, erro
 			case keyTab:
 				commands := autocomplete.searchByPrefix(string(currentLine))
 				if len(commands) > 1 {
-					drawCommandsWithPrefix(currentLine, prompt, cursor, commands)
+					drawCommandsWithPrefix(currentLine, prompt, commands)
 				} else if len(commands) == 1 {
 					currentLine = autocompleteCommand(currentLine, &cursor, commands)
 				}
