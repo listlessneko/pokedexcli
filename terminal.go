@@ -44,6 +44,21 @@ func redraw(new []byte, cursor int) {
 	os.Stdout.Write(new)
 }
 
+func deleteCharBeforeCursor(cursor *int, currentLine []byte) []byte {
+	if *cursor > 0 {
+		copy(currentLine[*cursor-1:], currentLine[*cursor:])
+		currentLine = currentLine[:len(currentLine)-1]
+		*cursor -= 1
+		os.Stdout.Write([]byte(cursorBckwd))
+		os.Stdout.Write([]byte(currentLine[*cursor:]))
+		os.Stdout.Write([]byte(" "))
+		nCol := len(currentLine) - *cursor + 1
+		seq := fmt.Sprintf("\x1b[%dD", nCol)
+		os.Stdout.Write([]byte(seq))
+	}
+	return currentLine
+}
+
 func readLine(prompt string, history []string, autocomplete *trie) (string, error) {
 	os.Stdout.Write([]byte(prompt))
 
@@ -73,17 +88,7 @@ func readLine(prompt string, history []string, autocomplete *trie) (string, erro
 				os.Stdout.Write([]byte(enterSeq))
 				return string(currentLine), nil
 			case keyBackspace:
-				if cursor > 0 {
-					copy(currentLine[cursor-1:], currentLine[cursor:])
-					currentLine = currentLine[:len(currentLine)-1]
-					cursor -= 1
-					os.Stdout.Write([]byte(cursorBckwd))
-					os.Stdout.Write([]byte(currentLine[cursor:]))
-					os.Stdout.Write([]byte(" "))
-					nCol := len(currentLine) - cursor + 1
-					seq := fmt.Sprintf("\x1b[%dD", nCol)
-					os.Stdout.Write([]byte(seq))
-				}
+				currentLine = deleteCharBeforeCursor(&cursor, currentLine)
 				continue
 			case keyEscape:
 				if i+2 < n && buf[i+1] == keyLSqBrckt {
