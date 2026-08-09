@@ -35,13 +35,13 @@ const (
 	cursorBckwd  = "\x1b[D"
 )
 
-func redraw(new []byte, cursor int) {
+func redrawCurrentLine(currentLine []byte, cursor int) {
 	if cursor > 0 {
 		seq := fmt.Sprintf("\x1b[%dD", cursor)
 		os.Stdout.Write([]byte(seq))
 	}
 	os.Stdout.Write([]byte(eraseSeq))
-	os.Stdout.Write(new)
+	os.Stdout.Write(currentLine)
 }
 
 func deleteCharBeforeCursor(currentLine []byte, cursor *int) []byte {
@@ -63,7 +63,7 @@ func moveUpHistory(currentLine []byte, cursor *int, history []string, historyInd
 	if *historyIndex > 0 {
 		*historyIndex -= 1
 		currentLine = []byte(history[*historyIndex])
-		redraw(currentLine, *cursor)
+		redrawCurrentLine(currentLine, *cursor)
 		*cursor = len(currentLine)
 	}
 	return currentLine
@@ -77,7 +77,7 @@ func moveDownHistory(currentLine []byte, cursor *int, history []string, historyI
 		} else {
 			currentLine = []byte(history[*historyIndex])
 		}
-		redraw(currentLine, *cursor)
+		redrawCurrentLine(currentLine, *cursor)
 		*cursor = len(currentLine)
 	}
 	return currentLine
@@ -95,6 +95,26 @@ func moveCursorBckwd(cursor *int, currentLine []byte) {
 		*cursor -= 1
 		os.Stdout.Write([]byte(cursorBckwd))
 	}
+}
+
+func drawCommandsWithPrefix(currentLine []byte, prompt string, cursor int, commands []string) {
+	os.Stdout.Write([]byte(enterSeq))
+	for i, command := range commands {
+		os.Stdout.Write([]byte(command))
+		if i < len(commands)-1 {
+			os.Stdout.Write([]byte("  "))
+		}
+	}
+	os.Stdout.Write([]byte(enterSeq))
+	os.Stdout.Write([]byte(prompt))
+	os.Stdout.Write((currentLine))
+}
+
+func autocompleteCommand(currentLine []byte, cursor *int, commands []string) []byte {
+	currentLine = []byte(commands[0])
+	redrawCurrentLine(currentLine, *cursor)
+	*cursor = len(currentLine)
+	return currentLine
 }
 
 func readLine(prompt string, history []string, autocomplete *trie) (string, error) {
@@ -146,21 +166,9 @@ func readLine(prompt string, history []string, autocomplete *trie) (string, erro
 			case keyTab:
 				commands := autocomplete.searchByPrefix(string(currentLine))
 				if len(commands) > 1 {
-					os.Stdout.Write([]byte(enterSeq))
-					for i, command := range commands {
-						os.Stdout.Write([]byte(command))
-						if i < len(commands)-1 {
-							os.Stdout.Write([]byte("  "))
-						}
-					}
-					os.Stdout.Write([]byte(enterSeq))
-					os.Stdout.Write([]byte(prompt))
-					os.Stdout.Write([]byte(currentLine))
-					continue
+					drawCommandsWithPrefix(currentLine, prompt, cursor, commands)
 				} else if len(commands) == 1 {
-					currentLine = []byte(commands[0])
-					redraw(currentLine, cursor)
-					cursor = len(currentLine)
+					currentLine = autocompleteCommand(currentLine, &cursor, commands)
 				}
 				continue
 			}
