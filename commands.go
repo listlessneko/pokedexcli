@@ -375,6 +375,24 @@ func commandChangeProfileName(app *app) error {
 		}
 	}
 
+	newSaveFile := save_ify(newName)
+	index, err := loadProfilesIndex()
+	if err != nil {
+		return err
+	}
+	oldSaveFile := app.config.SaveFile
+
+	err = os.Rename(oldSaveFile, newSaveFile)
+	if err != nil {
+		return err
+	}
+
+	delete(index, app.config.Name)
+	index[newName] = newSaveFile
+	saveProfilesIndex(index)
+
+	app.config.Name = newName
+	app.config.SaveFile = newSaveFile
 	app.config.Prompt = promptify(newName)
 
 	data, err := json.Marshal(app.config)
@@ -406,6 +424,7 @@ func commandSave(app *app) error {
 				break
 			}
 		}
+		app.config.Name = name
 		app.config.SaveFile = "saves/" + sanitizeInput(name) + ".json"
 		app.config.Prompt = promptify(name)
 		index, err := loadProfilesIndex()

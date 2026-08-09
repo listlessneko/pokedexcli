@@ -24,6 +24,7 @@ type cliCommand struct {
 }
 
 type config struct {
+	Name     string
 	SaveFile string
 	Prompt   string
 	Caught   map[string]Pokemon
