@@ -44,6 +44,20 @@ func redrawCurrentLine(currentLine []byte, cursor int) {
 	os.Stdout.Write(currentLine)
 }
 
+func addCharBeforeCursor(currentLine []byte, cursor *int, b byte) []byte {
+	currentLine = append(currentLine, 0)
+	copy(currentLine[*cursor+1:], currentLine[*cursor:])
+	currentLine[*cursor] = b
+	*cursor += 1
+	os.Stdout.Write(currentLine[*cursor-1:])
+	nCol := len(currentLine) - *cursor
+	if nCol > 0 {
+		seq := fmt.Sprintf("\x1b[%dD", nCol)
+		os.Stdout.Write([]byte(seq))
+	}
+	return currentLine
+}
+
 func deleteCharBeforeCursor(currentLine []byte, cursor *int) []byte {
 	if *cursor > 0 {
 		copy(currentLine[*cursor-1:], currentLine[*cursor:])
@@ -172,16 +186,7 @@ func readLine(prompt string, history []string, autocomplete *trie) (string, erro
 				}
 				continue
 			}
-			currentLine = append(currentLine, 0)
-			copy(currentLine[cursor+1:], currentLine[cursor:])
-			currentLine[cursor] = b
-			cursor += 1
-			os.Stdout.Write(currentLine[cursor-1:])
-			nCol := len(currentLine) - cursor
-			if nCol > 0 {
-				seq := fmt.Sprintf("\x1b[%dD", nCol)
-				os.Stdout.Write([]byte(seq))
-			}
+			currentLine = addCharBeforeCursor(currentLine, &cursor, b)
 		}
 	}
 }
