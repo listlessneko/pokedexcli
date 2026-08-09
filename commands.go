@@ -345,16 +345,8 @@ func commandSwitchProfiles(cfg *config, cache *cache, writer io.Writer, args []s
 		return err
 	}
 	if len(index) > 0 {
-		keys, err := justTheKeys(index)
-		if err != nil {
-			return err
-		}
-
-		prompts, err := sortSlices(keys, true)
-		if err != nil {
-			return err
-		}
-
+		keys := justTheKeys(index)
+		prompts := sortSlices(keys, asc)
 		prompts = append(prompts, "[Back]")
 		for {
 			selectedPrompt, err := selectPrompt(prompts)
@@ -401,16 +393,8 @@ func commandDelete(cfg *config, cache *cache, writer io.Writer, args []string) e
 		return err
 	}
 	if len(index) > 0 {
-		keys, err := justTheKeys(index)
-		if err != nil {
-			return err
-		}
-
-		prompts, err := sortSlices(keys, true)
-		if err != nil {
-			return err
-		}
-
+		keys := justTheKeys(index)
+		prompts := sortSlices(keys, asc)
 		prompts = append(prompts, "[Back]")
 		for {
 			selectedPrompt, err := selectPrompt(prompts)

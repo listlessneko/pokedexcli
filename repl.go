@@ -23,16 +23,8 @@ func startRepl() {
 		os.Stderr.Write([]byte(err.Error()))
 	}
 	if len(index) > 0 {
-		keys, err := justTheKeys(index)
-		if err != nil {
-			os.Stderr.Write([]byte(err.Error()))
-		}
-
-		prompts, err := sortSlices(keys, true)
-		if err != nil {
-			os.Stderr.Write([]byte(err.Error()))
-		}
-
+		keys:= justTheKeys(index)
+		prompts:= sortSlices(keys, asc)
 		prompts = append(prompts, "[New Save]")
 		selectedPrompt, err := selectPrompt(prompts)
 		if err != nil {

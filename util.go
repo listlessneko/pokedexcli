@@ -8,6 +8,11 @@ import (
 	"unicode"
 )
 
+const (
+	asc sortOrder = true
+	desc sortOrder = false
+)
+
 func cleanInput(text string) []string {
 	return strings.Fields(strings.ToLower(text))
 }
@@ -67,34 +72,39 @@ func capitalize(s string) string {
 	return strings.TrimSpace(final)
 }
 
+<<<<<<< HEAD
 func justTheKeys[K cmp.Ordered, V any](index map[K]V) ([]K, error) {
 	var keys []K
+=======
+func justTheKeys[E cmp.Ordered](index map[E]E) []E {
+	var keys []E
+>>>>>>> cleanup
 
 	if len(index) == 0 {
-		return keys, errors.New("map is empty")
+		return keys
 	}
 
 	for k := range index {
 		keys = append(keys, k)
 	}
-	return keys, nil
+	return keys
 }
 
-func sortSlices[E cmp.Ordered](s []E, asc bool) ([]E, error) {
+func sortSlices[E cmp.Ordered](s []E, order sortOrder) []E {
 	if len(s) == 0 {
-		return s, errors.New("unable to sort empty slice")
+		return s
 	}
 
-	if !asc {
+	if !order {
 		slices.SortStableFunc(s, func(i, j E) int {
 			return cmp.Compare(j, i)
 		})
-		return s, nil
+		return s
 	}
 	slices.SortStableFunc(s, func(i, j E) int {
 		return cmp.Compare(i, j)
 	})
-	return s, nil
+	return s
 }
 
 func boolToPtrEqual(a, b *bool) bool {

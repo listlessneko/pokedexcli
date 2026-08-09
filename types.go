@@ -6,6 +6,7 @@ import (
 )
 
 type profilesIndex map[string]string
+type sortOrder bool
 
 type cliCommand struct {
 	name        string
