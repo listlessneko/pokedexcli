@@ -66,17 +66,23 @@ func getCommands() map[string]cliCommand {
 			description: "Save current session.",
 			callback:    commandSave,
 		},
+		"delete": {
+			name:        "delete",
+			usage:       "delete",
+			description: "Delete a profile.",
+			callback:    commandDelete,
+		},
 		"switch-profiles": {
 			name:        "switch-profiles",
 			usage:       "switch-profiles",
 			description: "Switch to a different profile.",
 			callback:    commandSwitchProfiles,
 		},
-		"delete": {
-			name:        "delete",
-			usage:       "delete",
-			description: "Delete a profile.",
-			callback:    commandDelete,
+		"change-name": {
+			name:        "change-name",
+			usage:       "change-name",
+			description: "Change your profile's name (this also changes the prompt).",
+			callback:    commandChangeProfileName,
 		},
 		"exit": {
 			name:        "exit",
@@ -311,10 +317,20 @@ func commandPokedex(app *app) error {
 func commandProfile(app *app) error {
 	fmt.Fprintln(app.writer, "Manage your profiles:")
 
+	const (
+		profileSave       = "Save"
+		profileDelete     = "Delete"
+		profileSwitch     = "Switch"
+		profileChangeName = "Change Name"
+		profileBack       = "[Back]"
+	)
+
 	profileCommandsPrompts := []string{
-		"Save",
-		"Delete",
-		"Switch",
+		profileSave,
+		profileDelete,
+		profileSwitch,
+		profileChangeName,
+		profileBack,
 	}
 
 	selectedPrompt, err := selectPrompt(profileCommandsPrompts)
@@ -322,10 +338,15 @@ func commandProfile(app *app) error {
 		return err
 	}
 
+	if selectedPrompt == profileBack {
+		return nil
+	}
+
 	profileCommands := map[string]command{
-		"Save":   commandSave,
-		"Delete": commandDelete,
-		"Switch": commandSwitchProfiles,
+		profileSave:       commandSave,
+		profileDelete:     commandDelete,
+		profileSwitch:     commandSwitchProfiles,
+		profileChangeName: commandChangeProfileName,
 	}
 
 	selectedCommand := profileCommands[selectedPrompt]
@@ -334,6 +355,34 @@ func commandProfile(app *app) error {
 		return err
 	}
 
+	return nil
+}
+
+func commandChangeProfileName(app *app) error {
+	prompt := "New profile name: "
+	var newName string
+	var err error
+	var history []string
+	var autocomplete trie
+
+	for {
+		newName, err = readLine(prompt, history, &autocomplete)
+		if err != nil {
+			return err
+		}
+		if newName != "" {
+			break
+		}
+	}
+
+	app.config.Prompt = promptify(newName)
+
+	data, err := json.Marshal(app.config)
+	err = os.WriteFile(app.config.SaveFile, data, 0644)
+	if err != nil {
+		return err
+	}
+	fmt.Fprintln(app.writer, "New profile name saved.")
 	return nil
 }
 
@@ -358,7 +407,7 @@ func commandSave(app *app) error {
 			}
 		}
 		app.config.SaveFile = "saves/" + sanitizeInput(name) + ".json"
-		app.config.Prompt = "[" + name + "] Pokedex > "
+		app.config.Prompt = promptify(name)
 		index, err := loadProfilesIndex()
 		if err != nil {
 			return err
