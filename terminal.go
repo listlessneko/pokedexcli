@@ -2,14 +2,15 @@ package main
 
 import (
 	"fmt"
+	"golang.org/x/term"
 	"io"
 	"os"
-	"golang.org/x/term"
 )
 
 const (
 	bufSize      = 3
 	newLine      = '\x0a'
+	keyTab       = '\x09'
 	keyEnter     = '\x0d'
 	keyBackspace = '\x7f'
 	keyCtrlC     = '\x03'
