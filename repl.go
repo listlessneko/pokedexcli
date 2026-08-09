@@ -56,6 +56,11 @@ func startRepl() {
 	}
 
 	var history []string
+	var autocomplete trie
+	commands := getCommands()
+	for command, _ := range commands {
+		autocomplete.add(command)
+	}
 
 	for {
 
@@ -76,7 +81,6 @@ func startRepl() {
 
 		history = append(history, line)
 
-		commands := getCommands()
 		command, exists := commands[userInput[0]]
 		if exists {
 			err := command.callback(cfg, cache, os.Stdout, userInput[1:])
