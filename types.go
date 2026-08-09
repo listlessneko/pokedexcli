@@ -7,12 +7,20 @@ import (
 
 type profilesIndex map[string]string
 type sortOrder bool
+type command func(*app) error
+
+type app struct {
+	config *config
+	cache  *cache
+	writer io.Writer
+	args   []string
+}
 
 type cliCommand struct {
 	name        string
 	usage       string
 	description string
-	callback    func(*config, *cache, io.Writer, []string) error
+	callback    command
 }
 
 type config struct {

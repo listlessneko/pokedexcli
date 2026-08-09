@@ -10,11 +10,12 @@ import (
 )
 
 func startRepl() {
-	cfg := &config{
+	app := &app{}
+	app.config = &config{
 		Prompt: "Pokedex > ",
 		Caught: make(map[string]Pokemon),
 	}
-	cache := &cache{
+	app.cache = &cache{
 		Cache: pokecache.NewCache(60 * time.Second),
 	}
 
@@ -33,14 +34,14 @@ func startRepl() {
 
 		saveFilename := index[selectedPrompt]
 		if saveFilename != "" {
-			cfg.SaveFile = "saves/" + saveFilename + ".json"
+			app.config.SaveFile = "saves/" + saveFilename + ".json"
 		}
 	}
 
-	data, err := os.ReadFile(cfg.SaveFile)
+	data, err := os.ReadFile(app.config.SaveFile)
 	if !os.IsNotExist(err) {
 		if err == nil {
-			err = json.Unmarshal(data, &cfg)
+			err = json.Unmarshal(data, app.config)
 		}
 		if err != nil {
 			os.Stderr.Write([]byte(err.Error()))
@@ -55,7 +56,7 @@ func startRepl() {
 	}
 
 	for {
-		line, err := readLine(cfg.Prompt, history, autocomplete)
+		line, err := readLine(app.config.Prompt, history, autocomplete)
 		if errors.Is(err, io.EOF) {
 			os.Stdout.Write([]byte{newLine})
 			break
@@ -74,7 +75,9 @@ func startRepl() {
 
 		command, exists := commands[userInput[0]]
 		if exists {
-			err := command.callback(cfg, cache, os.Stdout, userInput[1:])
+			app.writer = os.Stdout
+			app.args = userInput[1:]
+			err := command.callback(app)
 			if err != nil {
 				os.Stderr.Write([]byte(err.Error() + "\n"))
 			}

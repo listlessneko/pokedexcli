@@ -54,6 +54,12 @@ func getCommands() map[string]cliCommand {
 			description: "Displays a list of Pokemon you caught.",
 			callback:    commandPokedex,
 		},
+		"profile": {
+			name:        "profile",
+			usage:       "profile",
+			description: "Manage your profiles.",
+			callback:    commandProfile,
+		},
 		"save": {
 			name:        "save",
 			usage:       "save",
@@ -81,8 +87,8 @@ func getCommands() map[string]cliCommand {
 	}
 }
 
-func commandHelp(cfg *config, cache *cache, writer io.Writer, args []string) error {
-	fmt.Fprintln(writer, "Welcome to the Pokedex!\nCommands:")
+func commandHelp(app *app) error {
+	fmt.Fprintln(app.writer, "Welcome to the Pokedex!\nCommands:")
 
 	commands := getCommands()
 
@@ -94,20 +100,20 @@ func commandHelp(cfg *config, cache *cache, writer io.Writer, args []string) err
 
 	for _, k := range keys {
 		command := commands[k]
-		fmt.Fprintf(writer, "Command: %s\nUsage: %s\n%s\n\n", command.name, command.usage, command.description)
+		fmt.Fprintf(app.writer, "Command: %s\nUsage: %s\n%s\n\n", command.name, command.usage, command.description)
 	}
 	return nil
 }
 
-func commandMap(cfg *config, cache *cache, writer io.Writer, args []string) error {
+func commandMap(app *app) error {
 	var url string
-	if cache.Next == nil {
+	if app.cache.Next == nil {
 		url = "https://pokeapi.co/api/v2/location-area/"
 	} else {
-		url = *cache.Next
+		url = *app.cache.Next
 	}
 
-	b, ok := cache.Cache.Get(url)
+	b, ok := app.cache.Cache.Get(url)
 	if !ok {
 		resp, err := http.Get(url)
 		if err != nil {
@@ -119,7 +125,7 @@ func commandMap(cfg *config, cache *cache, writer io.Writer, args []string) erro
 		if err != nil {
 			return err
 		}
-		cache.Cache.Add(url, b)
+		app.cache.Cache.Add(url, b)
 	}
 
 	var locations locationAreaResp
@@ -129,25 +135,25 @@ func commandMap(cfg *config, cache *cache, writer io.Writer, args []string) erro
 	}
 
 	for _, r := range locations.Results {
-		fmt.Fprintln(writer, r.Name)
+		fmt.Fprintln(app.writer, r.Name)
 	}
 
-	cache.Next = locations.Next
-	cache.Previous = locations.Previous
+	app.cache.Next = locations.Next
+	app.cache.Previous = locations.Previous
 
 	return nil
 }
 
-func commandMapB(cfg *config, cache *cache, writer io.Writer, args []string) error {
+func commandMapB(app *app) error {
 	var url string
-	if cache.Previous == nil {
-		fmt.Fprintln(writer, "You're on the first page.")
+	if app.cache.Previous == nil {
+		fmt.Fprintln(app.writer, "You're on the first page.")
 		return nil
 	} else {
-		url = *cache.Previous
+		url = *app.cache.Previous
 	}
 
-	b, ok := cache.Cache.Get(url)
+	b, ok := app.cache.Cache.Get(url)
 	if !ok {
 		resp, err := http.Get(url)
 		if err != nil {
@@ -159,7 +165,7 @@ func commandMapB(cfg *config, cache *cache, writer io.Writer, args []string) err
 		if err != nil {
 			return err
 		}
-		cache.Cache.Add(url, b)
+		app.cache.Cache.Add(url, b)
 	}
 
 	var locations locationAreaResp
@@ -169,25 +175,25 @@ func commandMapB(cfg *config, cache *cache, writer io.Writer, args []string) err
 	}
 
 	for _, r := range locations.Results {
-		fmt.Fprintln(writer, r.Name)
+		fmt.Fprintln(app.writer, r.Name)
 	}
 
-	cache.Next = locations.Next
-	cache.Previous = locations.Previous
+	app.cache.Next = locations.Next
+	app.cache.Previous = locations.Previous
 
 	return nil
 }
 
-func commandExplore(cfg *config, cache *cache, writer io.Writer, args []string) error {
-	if len(args) == 0 {
-		fmt.Fprintln(writer, "Please provide a valid area.")
+func commandExplore(app *app) error {
+	if len(app.args) == 0 {
+		fmt.Fprintln(app.writer, "Please provide a valid area.")
 		return nil
 	}
 
 	base_url := "https://pokeapi.co/api/v2/location-area/"
-	area_url := base_url + args[0]
+	area_url := base_url + app.args[0]
 
-	b, ok := cache.Cache.Get(area_url)
+	b, ok := app.cache.Cache.Get(area_url)
 	if !ok {
 		resp, err := http.Get(area_url)
 		if err != nil {
@@ -199,7 +205,7 @@ func commandExplore(cfg *config, cache *cache, writer io.Writer, args []string) 
 		if err != nil {
 			return err
 		}
-		cache.Cache.Add(area_url, b)
+		app.cache.Cache.Add(area_url, b)
 	}
 
 	var location locationAreaDetailResp
@@ -209,21 +215,21 @@ func commandExplore(cfg *config, cache *cache, writer io.Writer, args []string) 
 	}
 
 	for _, r := range location.PokemonEncounters {
-		fmt.Fprintln(writer, capitalize(r.Pokemon.Name))
+		fmt.Fprintln(app.writer, capitalize(r.Pokemon.Name))
 	}
 
 	return nil
 }
 
-func commandCatch(cfg *config, cache *cache, writer io.Writer, args []string) error {
-	if len(args) == 0 {
-		fmt.Fprintln(writer, "Please provide a valid Pokemon.")
+func commandCatch(app *app) error {
+	if len(app.args) == 0 {
+		fmt.Fprintln(app.writer, "Please provide a valid Pokemon.")
 		return nil
 	}
 
-	url := fmt.Sprintf("https://pokeapi.co/api/v2/pokemon/%s", args[0])
+	url := fmt.Sprintf("https://pokeapi.co/api/v2/pokemon/%s", app.args[0])
 
-	b, ok := cache.Cache.Get(url)
+	b, ok := app.cache.Cache.Get(url)
 	if !ok {
 		resp, err := http.Get(url)
 		if err != nil {
@@ -235,7 +241,7 @@ func commandCatch(cfg *config, cache *cache, writer io.Writer, args []string) er
 		if err != nil {
 			return err
 		}
-		cache.Cache.Add(url, b)
+		app.cache.Cache.Add(url, b)
 	}
 
 	var pokemon Pokemon
@@ -247,68 +253,97 @@ func commandCatch(cfg *config, cache *cache, writer io.Writer, args []string) er
 	pokemonName := capitalize(pokemon.Name)
 	chance := rand.Intn(pokemon.BaseExperience)
 
-	fmt.Fprintf(writer, "Throwing a Pokeball at %s...\n", pokemonName)
+	fmt.Fprintf(app.writer, "Throwing a Pokeball at %s...\n", pokemonName)
 	if chance < 50 {
-		cfg.Caught[pokemon.Name] = pokemon
-		fmt.Fprintf(writer, "You caught %s!\n", pokemonName)
-		fmt.Fprintln(writer, "You man now inspect it with the inspect command.")
+		app.config.Caught[pokemon.Name] = pokemon
+		fmt.Fprintf(app.writer, "You caught %s!\n", pokemonName)
+		fmt.Fprintln(app.writer, "You man now inspect it with the inspect command.")
 	} else {
-		fmt.Fprintf(writer, "%s ran away...\n", pokemonName)
+		fmt.Fprintf(app.writer, "%s ran away...\n", pokemonName)
 	}
 
 	return nil
 }
 
-func commandInspect(cfg *config, cache *cache, writer io.Writer, args []string) error {
-	if len(args) == 0 {
-		fmt.Fprintln(writer, "Please provide a valid Pokemon.")
+func commandInspect(app *app) error {
+	if len(app.args) == 0 {
+		fmt.Fprintln(app.writer, "Please provide a valid Pokemon.")
 		return nil
 	}
 
-	pokemon, ok := cfg.Caught[args[0]]
+	pokemon, ok := app.config.Caught[app.args[0]]
 	if !ok {
-		fmt.Fprintln(writer, "You have not caught that Pokemon.")
+		fmt.Fprintln(app.writer, "You have not caught that Pokemon.")
 		return nil
 	}
 
-	fmt.Fprintf(writer, "Name: %s\n", capitalize(pokemon.Name))
-	fmt.Fprintf(writer, "Height: %d\n", pokemon.Height)
-	fmt.Fprintf(writer, "Weight: %d\n", pokemon.Weight)
+	fmt.Fprintf(app.writer, "Name: %s\n", capitalize(pokemon.Name))
+	fmt.Fprintf(app.writer, "Height: %d\n", pokemon.Height)
+	fmt.Fprintf(app.writer, "Weight: %d\n", pokemon.Weight)
 
-	fmt.Fprintln(writer, "Stats:")
+	fmt.Fprintln(app.writer, "Stats:")
 	for _, s := range pokemon.Stats {
-		fmt.Fprintf(writer, "- %s: %d\n", s.Stat.Name, s.BaseStat)
+		fmt.Fprintf(app.writer, "- %s: %d\n", s.Stat.Name, s.BaseStat)
 	}
 
-	fmt.Fprintln(writer, "Types:")
+	fmt.Fprintln(app.writer, "Types:")
 	for _, t := range pokemon.Types {
-		fmt.Fprintf(writer, "- %s\n", capitalize(t.Type.Name))
+		fmt.Fprintf(app.writer, "- %s\n", capitalize(t.Type.Name))
 	}
 
 	return nil
 }
 
-func commandPokedex(cfg *config, cache *cache, writer io.Writer, args []string) error {
-	fmt.Fprintln(writer, "Your Pokedex:")
+func commandPokedex(app *app) error {
+	fmt.Fprintln(app.writer, "Your Pokedex:")
 
-	if len(cfg.Caught) == 0 {
-		fmt.Fprintln(writer, "You have no Pokemon...")
+	if len(app.config.Caught) == 0 {
+		fmt.Fprintln(app.writer, "You have no Pokemon...")
 		return nil
 	}
 
-	for _, p := range cfg.Caught {
-		fmt.Fprintf(writer, "- %s\n", capitalize(p.Name))
+	for _, p := range app.config.Caught {
+		fmt.Fprintf(app.writer, "- %s\n", capitalize(p.Name))
 	}
 	return nil
 }
 
-func commandSave(cfg *config, cache *cache, writer io.Writer, args []string) error {
-	data, err := json.Marshal(cfg)
+func commandProfile(app *app) error {
+	fmt.Fprintln(app.writer, "Manage your profiles:")
+
+	profileCommandsPrompts := []string{
+		"Save",
+		"Delete",
+		"Switch",
+	}
+
+	selectedPrompt, err := selectPrompt(profileCommandsPrompts)
 	if err != nil {
 		return err
 	}
 
-	if cfg.SaveFile == "" {
+	profileCommands := map[string]command{
+		"Save":   commandSave,
+		"Delete": commandDelete,
+		"Switch": commandSwitchProfiles,
+	}
+
+	selectedCommand := profileCommands[selectedPrompt]
+	err = selectedCommand(app)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func commandSave(app *app) error {
+	data, err := json.Marshal(app.config)
+	if err != nil {
+		return err
+	}
+
+	if app.config.SaveFile == "" {
 		prompt := "New profile: "
 		var history []string
 		var name string
@@ -322,7 +357,7 @@ func commandSave(cfg *config, cache *cache, writer io.Writer, args []string) err
 				break
 			}
 		}
-		cfg.SaveFile = "saves/" + sanitizeInput(name) + ".json"
+		app.config.SaveFile = "saves/" + sanitizeInput(name) + ".json"
 		index, err := loadProfilesIndex()
 		if err != nil {
 			return err
@@ -330,16 +365,17 @@ func commandSave(cfg *config, cache *cache, writer io.Writer, args []string) err
 		index[name] = sanitizeInput(name)
 		saveProfilesIndex(index)
 	}
-	err = os.WriteFile(cfg.SaveFile, data, 0644)
+	err = os.WriteFile(app.config.SaveFile, data, 0644)
 	if err != nil {
-		cfg.SaveFile = ""
+		app.config.SaveFile = ""
 		return err
 	}
-	fmt.Fprintln(writer, "Pokedex saved.")
+	fmt.Fprintln(app.writer, "Pokedex saved.")
 	return nil
 }
 
-func commandSwitchProfiles(cfg *config, cache *cache, writer io.Writer, args []string) error {
+func commandDelete(app *app) error {
+	fmt.Fprintln(app.writer, "Delete a profile:")
 	index, err := loadProfilesIndex()
 	if err != nil {
 		return err
@@ -357,56 +393,8 @@ func commandSwitchProfiles(cfg *config, cache *cache, writer io.Writer, args []s
 			saveFilename := index[selectedPrompt]
 			if saveFilename != "" {
 				saveFile := "saves/" + saveFilename + ".json"
-				if saveFile == cfg.SaveFile {
-					fmt.Fprintln(writer, "You're already using this profile.")
-					continue
-				}
-				data, err := os.ReadFile(saveFile)
-				if !os.IsNotExist(err) {
-					var tempCfg config
-					if err == nil {
-						err = json.Unmarshal(data, &tempCfg)
-					}
-					if err != nil {
-						fmt.Fprintln(writer, "There was an error extracting data from this profile.")
-						fmt.Fprintln(writer, err.Error())
-						continue
-					}
-					*cfg = tempCfg
-					cfg.Prompt = "[" + selectedPrompt + "] Pokedex > "
-					cfg.SaveFile = saveFile
-					fmt.Fprintf(writer, "Switching profile to %s...\n", selectedPrompt)
-					return nil
-				}
-				fmt.Fprintln(writer, "Profile does not exist.")
-				continue
-			}
-			break
-		}
-	}
-	return nil
-}
-
-func commandDelete(cfg *config, cache *cache, writer io.Writer, args []string) error {
-	index, err := loadProfilesIndex()
-	if err != nil {
-		return err
-	}
-	if len(index) > 0 {
-		keys := justTheKeys(index)
-		prompts := sortSlices(keys, asc)
-		prompts = append(prompts, "[Back]")
-		for {
-			selectedPrompt, err := selectPrompt(prompts)
-			if err != nil {
-				return err
-			}
-
-			saveFilename := index[selectedPrompt]
-			if saveFilename != "" {
-				saveFile := "saves/" + saveFilename + ".json"
-				if saveFile == cfg.SaveFile {
-					fmt.Fprintln(writer, "You cannot delete the file you're currently in.")
+				if saveFile == app.config.SaveFile {
+					fmt.Fprintln(app.writer, "You cannot delete the file you're currently in.")
 					continue
 				}
 				err = os.Remove(saveFile)
@@ -415,15 +403,15 @@ func commandDelete(cfg *config, cache *cache, writer io.Writer, args []string) e
 						delete(index, selectedPrompt)
 						err = saveProfilesIndex(index)
 						if err != nil {
-							fmt.Fprintln(writer, err.Error())
+							fmt.Fprintln(app.writer, err.Error())
 						}
-						fmt.Fprintln(writer, "Profile deleted.")
+						fmt.Fprintln(app.writer, "Profile deleted.")
 						return nil
 					}
-					fmt.Fprintln(writer, "There was an error deleting this profile.")
+					fmt.Fprintln(app.writer, "There was an error deleting this profile.")
 					continue
 				}
-				fmt.Fprintln(writer, "Profile does not exist.")
+				fmt.Fprintln(app.writer, "Profile does not exist.")
 				continue
 			}
 			break
@@ -432,8 +420,57 @@ func commandDelete(cfg *config, cache *cache, writer io.Writer, args []string) e
 	return nil
 }
 
-func commandExit(cfg *config, cache *cache, writer io.Writer, args []string) error {
-	fmt.Fprintln(writer, "Closing the Pokedex... Goodbye!")
+func commandSwitchProfiles(app *app) error {
+	fmt.Fprintln(app.writer, "Manage your profiles:")
+	index, err := loadProfilesIndex()
+	if err != nil {
+		return err
+	}
+	if len(index) > 0 {
+		keys := justTheKeys(index)
+		prompts := sortSlices(keys, asc)
+		prompts = append(prompts, "[Back]")
+		for {
+			selectedPrompt, err := selectPrompt(prompts)
+			if err != nil {
+				return err
+			}
+
+			saveFilename := index[selectedPrompt]
+			if saveFilename != "" {
+				saveFile := "saves/" + saveFilename + ".json"
+				if saveFile == app.config.SaveFile {
+					fmt.Fprintln(app.writer, "You're already using this profile.")
+					continue
+				}
+				data, err := os.ReadFile(saveFile)
+				if !os.IsNotExist(err) {
+					var tempConfig config
+					if err == nil {
+						err = json.Unmarshal(data, &tempConfig)
+					}
+					if err != nil {
+						fmt.Fprintln(app.writer, "There was an error extracting data from this profile.")
+						fmt.Fprintln(app.writer, err.Error())
+						continue
+					}
+					*app.config = tempConfig
+					app.config.Prompt = "[" + selectedPrompt + "] Pokedex > "
+					app.config.SaveFile = saveFile
+					fmt.Fprintf(app.writer, "Switching profile to %s...\n", selectedPrompt)
+					return nil
+				}
+				fmt.Fprintln(app.writer, "Profile does not exist.")
+				continue
+			}
+			break
+		}
+	}
+	return nil
+}
+
+func commandExit(app *app) error {
+	fmt.Fprintln(app.writer, "Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }

@@ -72,13 +72,8 @@ func capitalize(s string) string {
 	return strings.TrimSpace(final)
 }
 
-<<<<<<< HEAD
-func justTheKeys[K cmp.Ordered, V any](index map[K]V) ([]K, error) {
+func justTheKeys[K cmp.Ordered, V any](index map[K]V) []K {
 	var keys []K
-=======
-func justTheKeys[E cmp.Ordered](index map[E]E) []E {
-	var keys []E
->>>>>>> cleanup
 
 	if len(index) == 0 {
 		return keys
