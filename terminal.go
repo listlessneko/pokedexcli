@@ -111,11 +111,11 @@ func moveCursorBckwd(cursor *int, currentLine []byte) {
 	}
 }
 
-func drawCommandsWithPrefix(currentLine []byte, prompt string, commands []string) {
+func drawWordsWithPrefix(currentLine []byte, prompt string, words []string) {
 	os.Stdout.Write([]byte(enterSeq))
-	for i, command := range commands {
-		os.Stdout.Write([]byte(command))
-		if i < len(commands)-1 {
+	for i, word := range words {
+		os.Stdout.Write([]byte(word))
+		if i < len(words)-1 {
 			os.Stdout.Write([]byte("  "))
 		}
 	}
@@ -124,14 +124,14 @@ func drawCommandsWithPrefix(currentLine []byte, prompt string, commands []string
 	os.Stdout.Write((currentLine))
 }
 
-func autocompleteCommand(currentLine []byte, cursor *int, commands []string) []byte {
-	currentLine = []byte(commands[0])
+func autocompleteWord(currentLine []byte, cursor *int, words []string) []byte {
+	currentLine = []byte(words[0])
 	redrawCurrentLine(currentLine, *cursor)
 	*cursor = len(currentLine)
 	return currentLine
 }
 
-func readLine(prompt string, history []string, autocomplete *trie) (string, error) {
+func readLine(prompt string, history []string, wordTrie *trie) (string, error) {
 	os.Stdout.Write([]byte(prompt))
 
 	fd := int(os.Stdin.Fd())
@@ -178,11 +178,11 @@ func readLine(prompt string, history []string, autocomplete *trie) (string, erro
 				}
 				continue
 			case keyTab:
-				commands := autocomplete.searchByPrefix(string(currentLine))
-				if len(commands) > 1 {
-					drawCommandsWithPrefix(currentLine, prompt, commands)
-				} else if len(commands) == 1 {
-					currentLine = autocompleteCommand(currentLine, &cursor, commands)
+				words := wordTrie.searchByPrefix(string(currentLine))
+				if len(words) > 1 {
+					drawWordsWithPrefix(currentLine, prompt, words)
+				} else if len(words) == 1 {
+					currentLine = autocompleteWord(currentLine, &cursor, words)
 				}
 				continue
 			}
