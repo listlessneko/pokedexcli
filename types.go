@@ -47,6 +47,12 @@ type trie struct {
 	Root *trieNode
 }
 
+type inputState struct {
+	prompt   string
+	history  []string
+	wordTrie *trie
+}
+
 type locationAreaResp struct {
 	Next     *string `json:"next"`
 	Previous *string `json:"previous"`
