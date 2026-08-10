@@ -225,3 +225,10 @@ func (t *trie) searchByPrefix(prefix string) []string {
 	}
 	return t.searchLevel(currentLevel, prefix, collectedWords)
 }
+
+func newInputState(prompt string) *inputState {
+	return &inputState{
+		prompt: prompt,
+		wordTrie: newTrie(),
+	}
+}
