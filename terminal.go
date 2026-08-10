@@ -131,8 +131,8 @@ func autocompleteWord(currentLine []byte, cursor *int, words []string) []byte {
 	return currentLine
 }
 
-func readLine(prompt string, history []string, wordTrie *trie) (string, error) {
-	os.Stdout.Write([]byte(prompt))
+func readLine(input *inputState) (string, error) {
+	os.Stdout.Write([]byte(input.prompt))
 
 	fd := int(os.Stdin.Fd())
 	oldState, err := term.MakeRaw(fd)
@@ -142,7 +142,7 @@ func readLine(prompt string, history []string, wordTrie *trie) (string, error) {
 
 	defer term.Restore(fd, oldState)
 
-	historyIndex := len(history)
+	historyIndex := len(input.history)
 	var cursor int
 	var currentLine []byte
 	buf := make([]byte, bufSize)
@@ -166,9 +166,9 @@ func readLine(prompt string, history []string, wordTrie *trie) (string, error) {
 				if i+2 < n && buf[i+1] == keyLSqBrckt {
 					switch buf[i+2] {
 					case keyA:
-						currentLine = moveUpHistory(currentLine, &cursor, history, &historyIndex)
+						currentLine = moveUpHistory(currentLine, &cursor, input.history, &historyIndex)
 					case keyB:
-						currentLine = moveDownHistory(currentLine, &cursor, history, &historyIndex)
+						currentLine = moveDownHistory(currentLine, &cursor, input.history, &historyIndex)
 					case keyC:
 						moveCursorFwd(&cursor, currentLine)
 					case keyD:
@@ -178,9 +178,9 @@ func readLine(prompt string, history []string, wordTrie *trie) (string, error) {
 				}
 				continue
 			case keyTab:
-				words := wordTrie.searchByPrefix(string(currentLine))
+				words := input.wordTrie.searchByPrefix(string(currentLine))
 				if len(words) > 1 {
-					drawWordsWithPrefix(currentLine, prompt, words)
+					drawWordsWithPrefix(currentLine, input.prompt, words)
 				} else if len(words) == 1 {
 					currentLine = autocompleteWord(currentLine, &cursor, words)
 				}

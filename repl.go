@@ -43,15 +43,14 @@ func loadProfile(app *app) {
 }
 
 func beginTheLoop(app *app) {
-	var history []string
-	commandsTrie := newTrie()
+	input := newInputState(app.config.Prompt)
 	commands := getCommands()
 	for command, _ := range commands {
-		commandsTrie.add(command)
+		input.wordTrie.add(command)
 	}
 
 	for {
-		line, err := readLine(app.config.Prompt, history, commandsTrie)
+		line, err := readLine(input)
 		if errors.Is(err, io.EOF) {
 			os.Stdout.Write([]byte{newLine})
 			break
@@ -66,7 +65,7 @@ func beginTheLoop(app *app) {
 			continue
 		}
 
-		history = append(history, line)
+		input.history = append(input.history, line)
 
 		command, exists := commands[userInput[0]]
 		if !exists {

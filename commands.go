@@ -359,14 +359,12 @@ func commandProfile(app *app) error {
 }
 
 func commandChangeProfileName(app *app) error {
-	prompt := "New profile name: "
+	input := newInputState("New profile name: ")
 	var newName string
 	var err error
-	var history []string
-	var autocomplete trie
 
 	for {
-		newName, err = readLine(prompt, history, &autocomplete)
+		newName, err = readLine(input)
 		if err != nil {
 			return err
 		}
@@ -411,12 +409,11 @@ func commandSave(app *app) error {
 	}
 
 	if app.config.SaveFile == "" {
-		prompt := "New profile: "
-		var history []string
+		input := newInputState("New profile: ")
 		var name string
-		var autocomplete trie
+
 		for {
-			name, err = readLine(prompt, history, &autocomplete)
+			name, err = readLine(input)
 			if err != nil {
 				return err
 			}
@@ -424,6 +421,7 @@ func commandSave(app *app) error {
 				break
 			}
 		}
+
 		app.config.Name = name
 		app.config.SaveFile = save_ify(name)
 		app.config.Prompt = promptify(name)
