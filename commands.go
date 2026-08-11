@@ -359,11 +359,12 @@ func commandProfile(app *app) error {
 }
 
 func commandChangeProfileName(app *app) error {
-	input := newInputState("New profile name: ")
+	input := newInputState()
 	var newName string
 	var err error
 
 	for {
+		input.prompt = "New profile name: "
 		newName, err = readLine(input)
 		if err != nil {
 			return err
@@ -409,10 +410,11 @@ func commandSave(app *app) error {
 	}
 
 	if app.config.SaveFile == "" {
-		input := newInputState("New profile: ")
+		input := newInputState()
 		var name string
 
 		for {
+			input.prompt = "New profile: "
 			name, err = readLine(input)
 			if err != nil {
 				return err
