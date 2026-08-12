@@ -93,7 +93,7 @@ func getCommands() map[string]cliCommand {
 	}
 }
 
-func commandHelp(app *app) error {
+func commandHelp(app *appState) error {
 	fmt.Fprintln(app.writer, "Welcome to the Pokedex!\nCommands:")
 
 	commands := getCommands()
@@ -111,7 +111,7 @@ func commandHelp(app *app) error {
 	return nil
 }
 
-func commandMap(app *app) error {
+func commandMap(app *appState) error {
 	var url string
 	if app.cache.Next == nil {
 		url = "https://pokeapi.co/api/v2/location-area/"
@@ -150,7 +150,7 @@ func commandMap(app *app) error {
 	return nil
 }
 
-func commandMapB(app *app) error {
+func commandMapB(app *appState) error {
 	var url string
 	if app.cache.Previous == nil {
 		fmt.Fprintln(app.writer, "You're on the first page.")
@@ -190,7 +190,7 @@ func commandMapB(app *app) error {
 	return nil
 }
 
-func commandExplore(app *app) error {
+func commandExplore(app *appState) error {
 	if len(app.args) == 0 {
 		fmt.Fprintln(app.writer, "Please provide a valid area.")
 		return nil
@@ -227,7 +227,7 @@ func commandExplore(app *app) error {
 	return nil
 }
 
-func commandCatch(app *app) error {
+func commandCatch(app *appState) error {
 	if len(app.args) == 0 {
 		fmt.Fprintln(app.writer, "Please provide a valid Pokemon.")
 		return nil
@@ -271,7 +271,7 @@ func commandCatch(app *app) error {
 	return nil
 }
 
-func commandInspect(app *app) error {
+func commandInspect(app *appState) error {
 	if len(app.args) == 0 {
 		fmt.Fprintln(app.writer, "Please provide a valid Pokemon.")
 		return nil
@@ -300,7 +300,7 @@ func commandInspect(app *app) error {
 	return nil
 }
 
-func commandPokedex(app *app) error {
+func commandPokedex(app *appState) error {
 	fmt.Fprintln(app.writer, "Your Pokedex:")
 
 	if len(app.config.Caught) == 0 {
@@ -314,7 +314,7 @@ func commandPokedex(app *app) error {
 	return nil
 }
 
-func commandProfile(app *app) error {
+func commandProfile(app *appState) error {
 	fmt.Fprintln(app.writer, "Manage your profiles:")
 
 	const (
@@ -358,7 +358,7 @@ func commandProfile(app *app) error {
 	return nil
 }
 
-func commandChangeProfileName(app *app) error {
+func commandChangeProfileName(app *appState) error {
 	input := newInputState()
 	var newName string
 	var err error
@@ -403,7 +403,7 @@ func commandChangeProfileName(app *app) error {
 	return nil
 }
 
-func commandSave(app *app) error {
+func commandSave(app *appState) error {
 	data, err := json.Marshal(app.config)
 	if err != nil {
 		return err
@@ -443,7 +443,7 @@ func commandSave(app *app) error {
 	return nil
 }
 
-func commandDelete(app *app) error {
+func commandDelete(app *appState) error {
 	fmt.Fprintln(app.writer, "Delete a profile:")
 	index, err := loadProfilesIndex()
 	if err != nil {
@@ -489,7 +489,7 @@ func commandDelete(app *app) error {
 	return nil
 }
 
-func commandSwitchProfiles(app *app) error {
+func commandSwitchProfiles(app *appState) error {
 	fmt.Fprintln(app.writer, "Manage your profiles:")
 	index, err := loadProfilesIndex()
 	if err != nil {
@@ -537,7 +537,7 @@ func commandSwitchProfiles(app *app) error {
 	return nil
 }
 
-func commandExit(app *app) error {
+func commandExit(app *appState) error {
 	fmt.Fprintln(app.writer, "Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil

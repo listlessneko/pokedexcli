@@ -7,9 +7,9 @@ import (
 
 type profilesIndex map[string]string
 type sortOrder bool
-type command func(*app) error
+type command func(*appState) error
 
-type app struct {
+type appState struct {
 	config *config
 	cache  *cache
 	writer io.Writer

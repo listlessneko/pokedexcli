@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func selectProfile(app *app) {
+func selectProfile(app *appState) {
 	index, err := loadProfilesIndex()
 	if err != nil {
 		os.Stderr.Write([]byte(err.Error()))
@@ -30,7 +30,7 @@ func selectProfile(app *app) {
 	}
 }
 
-func loadProfile(app *app) {
+func loadProfile(app *appState) {
 	data, err := os.ReadFile(app.config.SaveFile)
 	if !os.IsNotExist(err) {
 		if err == nil {
@@ -42,7 +42,7 @@ func loadProfile(app *app) {
 	}
 }
 
-func beginTheLoop(app *app) {
+func beginTheLoop(app *appState) {
 	input := newInputState()
 	commands := getCommands()
 	for command, _ := range commands {
@@ -85,7 +85,7 @@ func beginTheLoop(app *app) {
 }
 
 func startRepl() {
-	app := &app{}
+	app := &appState{}
 	app.config = &config{
 		Prompt: "Pokedex > ",
 		Caught: make(map[string]Pokemon),
