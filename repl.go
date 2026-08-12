@@ -94,6 +94,7 @@ func startRepl() {
 		Cache: pokecache.NewCache(60 * time.Second),
 	}
 
+	openYard()
 	selectProfile(app)
 	loadProfile(app)
 	beginTheLoop(app)
