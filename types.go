@@ -1,8 +1,10 @@
 package main
 
 import (
-	"github.com/listlessneko/pokedexcli/internal/pokecache"
 	"io"
+	"os"
+
+	"github.com/listlessneko/pokedexcli/internal/pokecache"
 )
 
 type profilesIndex map[string]string
