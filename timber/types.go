@@ -1,0 +1,11 @@
+package timber
+
+import (
+	"io"
+	"log/slog"
+)
+
+type Handler struct {
+	Writer io.Writer
+	Level  slog.Level
+}
