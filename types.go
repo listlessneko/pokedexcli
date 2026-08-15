@@ -2,8 +2,6 @@ package main
 
 import (
 	"io"
-	"os"
-
 	"github.com/listlessneko/pokedexcli/internal/pokecache"
 )
 
