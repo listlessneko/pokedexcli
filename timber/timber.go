@@ -27,12 +27,16 @@ func (h *Handler) Handle(ctx context.Context, record slog.Record) error {
 	if err != nil {
 		return err
 	}
+	group := " "
+	if h.Group != "" {
+		group = " " + h.Group + "."
+	}
 	for _, a := range h.Attrs {
-		fmt.Fprintf(h.Writer, " %s=%v", a.Key, a.Value)
+		fmt.Fprintf(h.Writer, "%s%s=%v", group, a.Key, a.Value)
 	}
 	record.Attrs(
 		func(a slog.Attr) bool {
-			fmt.Fprintf(h.Writer, " %s=%v", a.Key, a.Value)
+			fmt.Fprintf(h.Writer, "%s%s=%v", group, a.Key, a.Value)
 			return true
 		})
 	fmt.Fprintf(h.Writer, "\n")
@@ -44,10 +48,18 @@ func (h *Handler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	copy(newAttrs, h.Attrs)
 	newAttrs = append(newAttrs, attrs...)
 	newH := New(h.Writer, h.Level)
+	newH.Group = h.Group
 	newH.Attrs = newAttrs
 	return newH
 }
 
-func (h *Handler) WithGroup(string string) slog.Handler {
-	return h
+func (h *Handler) WithGroup(name string) slog.Handler {
+	newH := New(h.Writer, h.Level)
+	newH.Attrs = h.Attrs
+	if h.Group == "" {
+		newH.Group = name
+	} else {
+		newH.Group = h.Group + "." + name
+	}
+	return newH
 }
