@@ -23,10 +23,16 @@ func (h *Handler) Handle(ctx context.Context, record slog.Record) error {
 	time := record.Time.Format(time.RFC822)
 	level := record.Level
 	message := record.Message
-	_, err := fmt.Fprintf(h.Writer, "(%s) [%s]: %s\n", time, level, message)
+	_, err := fmt.Fprintf(h.Writer, "(%s) [%s]: %s", time, level, message)
 	if err != nil {
 		return err
 	}
+	record.Attrs(
+		func(a slog.Attr) bool {
+			fmt.Fprintf(h.Writer, " %s=%v", a.Key, a.Value)
+			return true
+		})
+	fmt.Fprintf(h.Writer, "\n")
 	return nil
 }
 
