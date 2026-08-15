@@ -27,6 +27,9 @@ func (h *Handler) Handle(ctx context.Context, record slog.Record) error {
 	if err != nil {
 		return err
 	}
+	for _, a := range h.Attrs {
+		fmt.Fprintf(h.Writer, " %s=%v", a.Key, a.Value)
+	}
 	record.Attrs(
 		func(a slog.Attr) bool {
 			fmt.Fprintf(h.Writer, " %s=%v", a.Key, a.Value)
@@ -36,8 +39,13 @@ func (h *Handler) Handle(ctx context.Context, record slog.Record) error {
 	return nil
 }
 
-func (h *Handler) WithAttrs(attr []slog.Attr) slog.Handler {
-	return h
+func (h *Handler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	newAttrs := make([]slog.Attr, len(h.Attrs), len(h.Attrs)+len(attrs))
+	copy(newAttrs, h.Attrs)
+	newAttrs = append(newAttrs, attrs...)
+	newH := New(h.Writer, h.Level)
+	newH.Attrs = newAttrs
+	return newH
 }
 
 func (h *Handler) WithGroup(string string) slog.Handler {
