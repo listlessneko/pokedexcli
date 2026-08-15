@@ -2,8 +2,10 @@ package timber
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log/slog"
+	"time"
 )
 
 func New(writer io.Writer, level slog.Level) *Handler {
@@ -14,10 +16,17 @@ func New(writer io.Writer, level slog.Level) *Handler {
 }
 
 func (h *Handler) Enabled(ctx context.Context, level slog.Level) bool {
-	return true
+	return level >= h.Level
 }
 
 func (h *Handler) Handle(ctx context.Context, record slog.Record) error {
+	time := record.Time.Format(time.RFC822)
+	level := record.Level
+	message := record.Message
+	_, err := fmt.Fprintf(h.Writer, "(%s) [%s]: %s\n", time, level, message)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
