@@ -21,9 +21,9 @@ func (h *Handler) Enabled(ctx context.Context, level slog.Level) bool {
 
 func (h *Handler) Handle(ctx context.Context, record slog.Record) error {
 	time := record.Time.Format(time.RFC822)
-	level := fmt.Sprintf("[%s]", record.Level)
+	level := fmt.Sprintf("[%s]", levelName(record.Level))
 	message := record.Message
-	_, err := fmt.Fprintf(h.Writer, "(%s) %-7s: %s", time, level, message)
+	_, err := fmt.Fprintf(h.Writer, "(%s) %-10s: %s", time, level, message)
 	if err != nil {
 		return err
 	}
