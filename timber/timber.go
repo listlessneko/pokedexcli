@@ -5,8 +5,23 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"os"
 	"time"
 )
+
+func NewTimber() (*os.File, error) {
+	err := os.MkdirAll("yards", 0755)
+	if err != nil {
+		return nil, err
+	}
+	timeLayout := "2006-01-02-150405"
+	name := fmt.Sprintf("yard/timber-%s.log", time.Now().Format(timeLayout))
+	file, err := os.OpenFile(name, os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return nil, err
+	}
+	return file, nil
+}
 
 func NewHandler(writer io.Writer, level slog.Level) *Handler {
 	return &Handler{
