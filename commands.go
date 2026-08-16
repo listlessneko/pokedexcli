@@ -263,7 +263,7 @@ func commandCatch(app *appState) error {
 	if chance < 50 {
 		app.config.Caught[pokemon.Name] = pokemon
 		fmt.Fprintf(app.writer, "You caught %s!\n", pokemonName)
-		fmt.Fprintln(app.writer, "You man now inspect it with the inspect command.")
+		fmt.Fprintln(app.writer, "You can view more information about this Pokemon with the inspect command.")
 	} else {
 		fmt.Fprintf(app.writer, "%s ran away...\n", pokemonName)
 	}
