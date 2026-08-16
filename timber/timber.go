@@ -9,6 +9,12 @@ import (
 	"time"
 )
 
+func NewLeveler() Leveler {
+	leveler := new(slog.LevelVar)
+	leveler.Set(LevelSawdust)
+	return leveler
+}
+
 func NewTimber() (*os.File, error) {
 	err := os.MkdirAll("yard", 0755)
 	if err != nil {
@@ -23,15 +29,15 @@ func NewTimber() (*os.File, error) {
 	return file, nil
 }
 
-func NewHandler(writer io.Writer, level slog.Level) *Handler {
+func NewHandler(writer io.Writer, leveler slog.Leveler) *Handler {
 	return &Handler{
 		Writer: writer,
-		Level:  level,
+		Leveler:  leveler,
 	}
 }
 
 func (h *Handler) Enabled(ctx context.Context, level slog.Level) bool {
-	return level >= h.Level
+	return level >= h.Leveler.Level()
 }
 
 func (h *Handler) Handle(ctx context.Context, record slog.Record) error {
@@ -62,14 +68,14 @@ func (h *Handler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	newAttrs := make([]slog.Attr, len(h.Attrs), len(h.Attrs)+len(attrs))
 	copy(newAttrs, h.Attrs)
 	newAttrs = append(newAttrs, attrs...)
-	newH := NewHandler(h.Writer, h.Level)
+	newH := NewHandler(h.Writer, h.Leveler)
 	newH.Group = h.Group
 	newH.Attrs = newAttrs
 	return newH
 }
 
 func (h *Handler) WithGroup(name string) slog.Handler {
-	newH := NewHandler(h.Writer, h.Level)
+	newH := NewHandler(h.Writer, h.Leveler)
 	newH.Attrs = h.Attrs
 	if h.Group == "" {
 		newH.Group = name

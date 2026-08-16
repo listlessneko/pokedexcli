@@ -5,9 +5,11 @@ import (
 	"log/slog"
 )
 
+type Leveler = *slog.LevelVar
+
 type Handler struct {
 	Writer io.Writer
-	Level  slog.Level
+	Leveler  slog.Leveler
 	Attrs  []slog.Attr
 	Group  string
 }
