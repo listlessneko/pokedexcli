@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/listlessneko/pokedexcli/internal/pokecache"
+	"github.com/listlessneko/pokedexcli/timber"
 	"io"
 	"os"
 	"time"
@@ -79,7 +80,7 @@ func beginTheLoop(app *appState) {
 		if err != nil {
 			os.Stderr.Write([]byte(err.Error() + "\n"))
 			continue
-		} 
+		}
 		continue
 	}
 }
@@ -94,6 +95,15 @@ func startRepl() {
 		Cache: pokecache.NewCache(60 * time.Second),
 	}
 
+	file, err := timber.NewTimber()
+	if err != nil {
+		os.Stderr.Write([]byte(err.Error() + "\n"))
+	}
+
+	timberHandler := timber.NewHandler(file, timber.LevelSawdust)
+	app.logger = timber.NewLogger(timberHandler)
+	logger := app.logger
+	logger.Bark("Cutting timber...")
 	selectProfile(app)
 	loadProfile(app)
 	beginTheLoop(app)

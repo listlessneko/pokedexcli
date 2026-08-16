@@ -2,7 +2,9 @@ package main
 
 import (
 	"io"
+
 	"github.com/listlessneko/pokedexcli/internal/pokecache"
+	"github.com/listlessneko/pokedexcli/timber"
 )
 
 type profilesIndex map[string]string
@@ -10,6 +12,7 @@ type sortOrder bool
 type command func(*appState) error
 
 type appState struct {
+	logger *timber.Logger
 	config *config
 	cache  *cache
 	writer io.Writer
