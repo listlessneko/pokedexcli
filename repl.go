@@ -87,6 +87,21 @@ func beginTheLoop(app *appState) {
 
 func startRepl() {
 	app := &appState{}
+	app.log = &log{}
+	app.log.leveler = timber.NewLeveler()
+	timberLeveler := app.log.leveler
+	timberLeveler.Set(timber.LevelBark)
+
+	file, err := timber.NewTimber()
+	if err != nil {
+		os.Stderr.Write([]byte(err.Error() + "\n"))
+	}
+
+	timberHandler := timber.NewHandler(file, timberLeveler)
+	app.log.logger = timber.NewLogger(timberHandler)
+	logger := app.log.logger
+	logger.Bark("Cutting timber...")
+
 	app.config = &config{
 		Prompt: "Pokedex > ",
 		Caught: make(map[string]Pokemon),
@@ -95,15 +110,6 @@ func startRepl() {
 		Cache: pokecache.NewCache(60 * time.Second),
 	}
 
-	file, err := timber.NewTimber()
-	if err != nil {
-		os.Stderr.Write([]byte(err.Error() + "\n"))
-	}
-
-	timberHandler := timber.NewHandler(file, timber.LevelSawdust)
-	app.logger = timber.NewLogger(timberHandler)
-	logger := app.logger
-	logger.Bark("Cutting timber...")
 	selectProfile(app)
 	loadProfile(app)
 	beginTheLoop(app)

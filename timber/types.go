@@ -8,10 +8,10 @@ import (
 type Leveler = *slog.LevelVar
 
 type Handler struct {
-	Writer io.Writer
-	Leveler  slog.Leveler
-	Attrs  []slog.Attr
-	Group  string
+	Writer  io.Writer
+	Leveler slog.Leveler
+	Attrs   []slog.Attr
+	Group   string
 }
 
 type Logger struct {

@@ -31,8 +31,8 @@ func NewTimber() (*os.File, error) {
 
 func NewHandler(writer io.Writer, leveler slog.Leveler) *Handler {
 	return &Handler{
-		Writer: writer,
-		Leveler:  leveler,
+		Writer:  writer,
+		Leveler: leveler,
 	}
 }
 
