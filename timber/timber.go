@@ -10,7 +10,7 @@ import (
 )
 
 func NewTimber() (*os.File, error) {
-	err := os.MkdirAll("yards", 0755)
+	err := os.MkdirAll("yard", 0755)
 	if err != nil {
 		return nil, err
 	}
