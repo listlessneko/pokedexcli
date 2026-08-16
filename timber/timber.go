@@ -8,10 +8,10 @@ import (
 	"time"
 )
 
-func New(writer io.Writer, level slog.Level) *Handler {
+func NewHandler(writer io.Writer, level slog.Level) *Handler {
 	return &Handler{
 		Writer: writer,
-		Level:  level,
+		Level: level,
 	}
 }
 
@@ -47,14 +47,14 @@ func (h *Handler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	newAttrs := make([]slog.Attr, len(h.Attrs), len(h.Attrs)+len(attrs))
 	copy(newAttrs, h.Attrs)
 	newAttrs = append(newAttrs, attrs...)
-	newH := New(h.Writer, h.Level)
+	newH := NewHandler(h.Writer, h.Level)
 	newH.Group = h.Group
 	newH.Attrs = newAttrs
 	return newH
 }
 
 func (h *Handler) WithGroup(name string) slog.Handler {
-	newH := New(h.Writer, h.Level)
+	newH := NewHandler(h.Writer, h.Level)
 	newH.Attrs = h.Attrs
 	if h.Group == "" {
 		newH.Group = name
