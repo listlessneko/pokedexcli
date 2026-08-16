@@ -11,3 +11,7 @@ type Handler struct {
 	Attrs  []slog.Attr
 	Group  string
 }
+
+type Logger struct {
+	logger *slog.Logger
+}

@@ -11,7 +11,7 @@ import (
 func NewHandler(writer io.Writer, level slog.Level) *Handler {
 	return &Handler{
 		Writer: writer,
-		Level: level,
+		Level:  level,
 	}
 }
 
@@ -62,4 +62,43 @@ func (h *Handler) WithGroup(name string) slog.Handler {
 		newH.Group = h.Group + "." + name
 	}
 	return newH
+}
+
+func NewLogger(handler *Handler) *Logger {
+	logger := slog.New(handler)
+	return &Logger{
+		logger: logger,
+	}
+}
+
+func (l *Logger) Sawdust(msg string, args ...any) {
+	l.logger.Log(context.Background(), LevelSawdust, msg, args...)
+}
+
+func (l *Logger) Chip(msg string, args ...any) {
+	l.logger.Log(context.Background(), LevelChip, msg, args...)
+}
+
+func (l *Logger) Bark(msg string, args ...any) {
+	l.logger.Log(context.Background(), LevelBark, msg, args...)
+}
+
+func (l *Logger) Knot(msg string, args ...any) {
+	l.logger.Log(context.Background(), LevelKnot, msg, args...)
+}
+
+func (l *Logger) Splinter(msg string, args ...any) {
+	l.logger.Log(context.Background(), LevelSplinter, msg, args...)
+}
+
+func (l *Logger) Timber(msg string, args ...any) {
+	l.logger.Log(context.Background(), LevelTimber, msg, args...)
+}
+
+func (l *Logger) Branch(args ...any) *Logger {
+	return &Logger{logger: l.logger.With(args...)}
+}
+
+func (l *Logger) BranchGroup(name string) *Logger {
+	return &Logger{logger: l.logger.WithGroup(name)}
 }
