@@ -92,6 +92,11 @@ type PokemonTypes struct {
 	Type NamedAPIResource `json:"type"`
 }
 
+type PokemonSpecies struct {
+	Name string `json:"name"`
+	URL  string `json:"url"`
+}
+
 type Pokemon struct {
 	Name           string         `json:"name"`
 	BaseExperience int            `json:"base_experience"`
@@ -99,4 +104,5 @@ type Pokemon struct {
 	Weight         int            `json:"weight"`
 	Stats          []PokemonStats `json:"stats"`
 	Types          []PokemonTypes `json:"types"`
+	Species        PokemonSpecies `json:"species"`
 }
