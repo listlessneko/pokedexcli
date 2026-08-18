@@ -259,7 +259,38 @@ func commandCatch(app *appState) error {
 	pokemonName := capitalize(pokemon.Name)
 	chance := rand.Intn(pokemon.BaseExperience)
 
-	fmt.Fprintf(app.writer, "Throwing a Pokeball at %s...\n", pokemonName)
+	const (
+		pokeball  = "Poke Ball"
+		greatball = "Great Ball"
+		ultraball = "Ultra Ball"
+		catchBack = "[Back]"
+	)
+
+	pokeballs := []string{
+		pokeball,
+		greatball,
+		ultraball,
+		catchBack,
+	}
+
+	selectedPokeball, err := selectPrompt(pokeballs)
+	if err != nil {
+		return err
+	}
+
+	if selectedPokeball == catchBack {
+		return nil
+	}
+
+	switch selectedPokeball {
+	case pokeball:
+	case greatball:
+		chance = int(float64(chance) * 1.5)
+	case ultraball:
+		chance = int(float64(chance) * 2)
+	}
+
+	fmt.Fprintf(app.writer, "You throw a %s at %s...\n", selectedPokeball, pokemonName)
 	if chance < 50 {
 		app.config.Caught[pokemon.Name] = pokemon
 		fmt.Fprintf(app.writer, "You caught %s!\n", pokemonName)
