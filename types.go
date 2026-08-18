@@ -97,6 +97,11 @@ type PokemonSpecies struct {
 	URL  string `json:"url"`
 }
 
+type Species struct {
+	Name        string `json:"name"`
+	CaptureRate int    `json:"capture_rate"`
+}
+
 type Pokemon struct {
 	Name           string         `json:"name"`
 	BaseExperience int            `json:"base_experience"`
