@@ -229,6 +229,7 @@ func commandExplore(app *appState) error {
 
 func commandCatch(app *appState) error {
 	logger := app.log.logger
+
 	if len(app.args) == 0 {
 		fmt.Fprintln(app.writer, "Please provide a valid Pokemon.")
 		return nil
@@ -281,6 +282,7 @@ func commandCatch(app *appState) error {
 
 	speciesLogger := logger.BranchGroup("species").Branch("name", species.Name, "capture_rate", species.CaptureRate)
 	speciesLogger.Bark("species")
+
 	pokemonName := capitalize(pokemon.Name)
 	captureRate := species.CaptureRate
 
@@ -316,11 +318,16 @@ func commandCatch(app *appState) error {
 	}
 
 	fmt.Fprintf(app.writer, "You throw a %s at %s...\n", selectedPokeball, pokemonName)
+	// TODO: introduce dynamic, random stats
+	// hp stubs
+	scaledMaxHP := 100 * 3
+	scaledCurrentHP := 100 * 2
+	x := ((scaledMaxHP - scaledCurrentHP) * captureRate) / scaledMaxHP
 	randomInt := rand.Intn(256)
 
-	catchLogger := logger.BranchGroup("catch").Branch("pokemon", pokemon.Name, "original_capture_rate", species.CaptureRate, "new_capture_rate", captureRate, "pokeball", selectedPokeball, "randomInt", randomInt)
+	catchLogger := logger.BranchGroup("catch").Branch("pokemon", pokemon.Name, "capture_rate", species.CaptureRate, "pokeball", selectedPokeball, "x", x, "randomInt", randomInt)
 
-	if randomInt <= captureRate {
+	if randomInt <= x {
 		catchLogger.Bark("caught!")
 		app.config.Caught[pokemon.Name] = pokemon
 		fmt.Fprintf(app.writer, "You caught %s!\n", pokemonName)
@@ -329,7 +336,6 @@ func commandCatch(app *appState) error {
 		catchLogger.Bark("ran away...")
 		fmt.Fprintf(app.writer, "%s ran away...\n", pokemonName)
 	}
-
 	return nil
 }
 
