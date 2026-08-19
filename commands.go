@@ -228,6 +228,7 @@ func commandExplore(app *appState) error {
 }
 
 func commandCatch(app *appState) error {
+	logger := app.log.logger
 	if len(app.args) == 0 {
 		fmt.Fprintln(app.writer, "Please provide a valid Pokemon.")
 		return nil
@@ -237,13 +238,13 @@ func commandCatch(app *appState) error {
 
 	b, ok := app.cache.Cache.Get(url)
 	if !ok {
-		resp, err := http.Get(url)
+		pokemonResp, err := http.Get(url)
 		if err != nil {
 			return err
 		}
 
-		defer resp.Body.Close()
-		b, err = io.ReadAll(resp.Body)
+		defer pokemonResp.Body.Close()
+		b, err = io.ReadAll(pokemonResp.Body)
 		if err != nil {
 			return err
 		}
@@ -256,8 +257,32 @@ func commandCatch(app *appState) error {
 		return err
 	}
 
+	url = pokemon.Species.URL
+	b, ok = app.cache.Cache.Get(url)
+	if !ok {
+		speciesResp, err := http.Get(url)
+		if err != nil {
+			return err
+		}
+
+		defer speciesResp.Body.Close()
+		b, err = io.ReadAll(speciesResp.Body)
+		if err != nil {
+			return err
+		}
+		app.cache.Cache.Add(url, b)
+	}
+
+	var species Species
+	err = json.Unmarshal(b, &species)
+	if err != nil {
+		return err
+	}
+
+	speciesLogger := logger.BranchGroup("species").Branch("name", species.Name, "capture_rate", species.CaptureRate)
+	speciesLogger.Bark("species")
 	pokemonName := capitalize(pokemon.Name)
-	chance := rand.Intn(pokemon.BaseExperience)
+	captureRate := species.CaptureRate
 
 	const (
 		pokeball  = "Poke Ball"
@@ -285,17 +310,23 @@ func commandCatch(app *appState) error {
 	switch selectedPokeball {
 	case pokeball:
 	case greatball:
-		chance = int(float64(chance) * 1.5)
+		captureRate = int(float64(captureRate) * 1.5)
 	case ultraball:
-		chance = int(float64(chance) * 2)
+		captureRate = int(float64(captureRate) * 2)
 	}
 
 	fmt.Fprintf(app.writer, "You throw a %s at %s...\n", selectedPokeball, pokemonName)
-	if chance < 50 {
+	randomInt := rand.Intn(256)
+
+	catchLogger := logger.BranchGroup("catch").Branch("pokemon", pokemon.Name, "original_capture_rate", species.CaptureRate, "new_capture_rate", captureRate, "pokeball", selectedPokeball, "randomInt", randomInt)
+
+	if randomInt <= captureRate {
+		catchLogger.Bark("caught!")
 		app.config.Caught[pokemon.Name] = pokemon
 		fmt.Fprintf(app.writer, "You caught %s!\n", pokemonName)
 		fmt.Fprintln(app.writer, "You can view more information about this Pokemon with the inspect command.")
 	} else {
+		catchLogger.Bark("ran away...")
 		fmt.Fprintf(app.writer, "%s ran away...\n", pokemonName)
 	}
 
