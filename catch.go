@@ -1,0 +1,27 @@
+package main
+
+const (
+	pokeball  = "Poke Ball"
+	greatball = "Great Ball"
+	ultraball = "Ultra Ball"
+	catchBack = "[Back]"
+)
+
+var pokeballs = []string{
+	pokeball,
+	greatball,
+	ultraball,
+	catchBack,
+}
+
+func captureRateByPokeball(captureRate int, selected string) int {
+	switch selected {
+	case pokeball:
+	case greatball:
+		captureRate = int(float64(captureRate) * 1.5)
+	case ultraball:
+		captureRate = int(float64(captureRate) * 2)
+	default:
+	}
+	return captureRate
+}
