@@ -242,6 +242,11 @@ func commandCatch(app *appState) error {
 		return err
 	}
 
+	if string(b) == "Not Found" {
+		fmt.Fprintln(app.writer, "Please provide a valid Pokemon.")
+		return nil
+	}
+
 	var pokemon Pokemon
 	err = json.Unmarshal(b, &pokemon)
 	if err != nil {
@@ -259,7 +264,6 @@ func commandCatch(app *appState) error {
 	if err != nil {
 		return err
 	}
-
 
 	speciesLogger := logger.BranchGroup("species").Branch("name", species.Name, "capture_rate", species.CaptureRate)
 	speciesLogger.Bark("species")
