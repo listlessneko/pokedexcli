@@ -237,41 +237,21 @@ func commandCatch(app *appState) error {
 
 	url := fmt.Sprintf("https://pokeapi.co/api/v2/pokemon/%s", app.args[0])
 
-	b, ok := app.cache.Cache.Get(url)
-	if !ok {
-		pokemonResp, err := http.Get(url)
-		if err != nil {
-			return err
-		}
-
-		defer pokemonResp.Body.Close()
-		b, err = io.ReadAll(pokemonResp.Body)
-		if err != nil {
-			return err
-		}
-		app.cache.Cache.Add(url, b)
+	b, err := fetch(url, app)
+	if err != nil {
+		return err
 	}
 
 	var pokemon Pokemon
-	err := json.Unmarshal(b, &pokemon)
+	err = json.Unmarshal(b, &pokemon)
 	if err != nil {
 		return err
 	}
 
 	url = pokemon.Species.URL
-	b, ok = app.cache.Cache.Get(url)
-	if !ok {
-		speciesResp, err := http.Get(url)
-		if err != nil {
-			return err
-		}
-
-		defer speciesResp.Body.Close()
-		b, err = io.ReadAll(speciesResp.Body)
-		if err != nil {
-			return err
-		}
-		app.cache.Cache.Add(url, b)
+	b, err = fetch(url, app)
+	if err != nil {
+		return err
 	}
 
 	var species Species
@@ -279,6 +259,7 @@ func commandCatch(app *appState) error {
 	if err != nil {
 		return err
 	}
+
 
 	speciesLogger := logger.BranchGroup("species").Branch("name", species.Name, "capture_rate", species.CaptureRate)
 	speciesLogger.Bark("species")
