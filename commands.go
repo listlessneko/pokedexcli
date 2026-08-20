@@ -271,20 +271,6 @@ func commandCatch(app *appState) error {
 	pokemonName := capitalize(pokemon.Name)
 	captureRate := species.CaptureRate
 
-	const (
-		pokeball  = "Poke Ball"
-		greatball = "Great Ball"
-		ultraball = "Ultra Ball"
-		catchBack = "[Back]"
-	)
-
-	pokeballs := []string{
-		pokeball,
-		greatball,
-		ultraball,
-		catchBack,
-	}
-
 	selectedPokeball, err := selectPrompt(pokeballs)
 	if err != nil {
 		return err
@@ -294,13 +280,7 @@ func commandCatch(app *appState) error {
 		return nil
 	}
 
-	switch selectedPokeball {
-	case pokeball:
-	case greatball:
-		captureRate = int(float64(captureRate) * 1.5)
-	case ultraball:
-		captureRate = int(float64(captureRate) * 2)
-	}
+	captureRate = captureRateByPokeball(captureRate, selectedPokeball)
 
 	fmt.Fprintf(app.writer, "You throw a %s at %s...\n", selectedPokeball, pokemonName)
 	// TODO: introduce dynamic, random stats
