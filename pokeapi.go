@@ -6,8 +6,8 @@ import (
 )
 
 func fetch(url string, app *appState) ([]byte, error) {
-	logger := app.log.logger.BranchGroup("fetch")
-	logger.Bark("fetching from pokeapi...")
+	logger := app.log.logger.BranchGroup("fetch").Branch("url", url)
+	logger.Bark("fetching...")
 
 	b, ok := app.cache.Cache.Get(url)
 	if !ok {
@@ -23,5 +23,6 @@ func fetch(url string, app *appState) ([]byte, error) {
 		}
 		app.cache.Cache.Add(url, b)
 	}
+	logger.Bark("fetched")
 	return b, nil
 }
