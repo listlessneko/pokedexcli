@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"math/rand"
 	"net/http"
 	"os"
 	"sort"
@@ -259,7 +258,7 @@ func commandCatch(app *appState) error {
 		return err
 	}
 
-	var species Species
+	species := pokemon.Species
 	err = json.Unmarshal(b, &species)
 	if err != nil {
 		return err

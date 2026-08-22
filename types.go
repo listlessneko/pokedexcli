@@ -93,12 +93,8 @@ type PokemonTypes struct {
 }
 
 type PokemonSpecies struct {
-	Name string `json:"name"`
-	URL  string `json:"url"`
-}
-
-type Species struct {
 	Name        string `json:"name"`
+	URL         string `json:"url"`
 	CaptureRate int    `json:"capture_rate"`
 }
 
