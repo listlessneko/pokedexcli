@@ -234,32 +234,7 @@ func commandCatch(app *appState) error {
 		return nil
 	}
 
-	url := fmt.Sprintf("https://pokeapi.co/api/v2/pokemon/%s", app.args[0])
-
-	b, err := fetch(url, app)
-	if err != nil {
-		return err
-	}
-
-	if string(b) == "Not Found" {
-		fmt.Fprintln(app.writer, "Please provide a valid Pokemon.")
-		return nil
-	}
-
-	var pokemon Pokemon
-	err = json.Unmarshal(b, &pokemon)
-	if err != nil {
-		return err
-	}
-
-	url = pokemon.Species.URL
-	b, err = fetch(url, app)
-	if err != nil {
-		return err
-	}
-
-	species := pokemon.Species
-	err = json.Unmarshal(b, &species)
+	species, err := getPokemonSpecies(app)
 	if err != nil {
 		return err
 	}
@@ -267,7 +242,7 @@ func commandCatch(app *appState) error {
 	speciesLogger := logger.BranchGroup("species").Branch("name", species.Name, "capture_rate", species.CaptureRate)
 	speciesLogger.Bark("species")
 
-	pokemonName := capitalize(pokemon.Name)
+	pokemonName := capitalize(species.Name)
 	captureRate := species.CaptureRate
 
 	selectedPokeball, err := selectPrompt(pokeballs)
@@ -284,13 +259,19 @@ func commandCatch(app *appState) error {
 
 	fmt.Fprintf(app.writer, "You throw a %s at %s...\n", selectedPokeball, pokemonName)
 
-	catchLogger := logger.BranchGroup("catch").Branch("pokemon", pokemon.Name, "capture_rate", species.CaptureRate, "pokeball", selectedPokeball, "true_capture_rate", captureRate)
+	catchLogger := logger.BranchGroup("catch").Branch("pokemon", species.Name, "capture_rate", species.CaptureRate, "pokeball", selectedPokeball, "true_capture_rate", captureRate)
 
 	if !isCaptured(captureRate) {
 		catchLogger.Bark("ran away...")
 		fmt.Fprintf(app.writer, "%s ran away...\n", pokemonName)
 	} else {
 		catchLogger.Bark("caught!")
+		// TODO: Might not be needed when battle system is implemented since the battle system should already know this.
+		// Maybe already stored in appState
+		pokemon, err := getPokemon(app)
+		if  err != nil {
+			return err
+		}
 		app.config.Caught[pokemon.Name] = pokemon
 		fmt.Fprintf(app.writer, "You caught %s!\n", pokemonName)
 		fmt.Fprintln(app.writer, "You can view more information about this Pokemon with the inspect command.")
