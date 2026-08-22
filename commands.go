@@ -281,18 +281,14 @@ func commandCatch(app *appState) error {
 	}
 
 	captureRate = captureRateByPokeball(captureRate, selectedPokeball)
+	captureRate = trueCaptureRate(captureRate)
 
 	fmt.Fprintf(app.writer, "You throw a %s at %s...\n", selectedPokeball, pokemonName)
-	// TODO: introduce dynamic, random stats
-	// hp stubs
-	scaledMaxHP := 100 * 3
-	scaledCurrentHP := 100 * 2
-	x := ((scaledMaxHP - scaledCurrentHP) * captureRate) / scaledMaxHP
 	randomInt := rand.Intn(256)
 
-	catchLogger := logger.BranchGroup("catch").Branch("pokemon", pokemon.Name, "capture_rate", species.CaptureRate, "pokeball", selectedPokeball, "x", x, "randomInt", randomInt)
+	catchLogger := logger.BranchGroup("catch").Branch("pokemon", pokemon.Name, "capture_rate", species.CaptureRate, "pokeball", selectedPokeball, "true_capture_rate", captureRate, "randomInt", randomInt)
 
-	if randomInt <= x {
+	if randomInt <= captureRate {
 		catchLogger.Bark("caught!")
 		app.config.Caught[pokemon.Name] = pokemon
 		fmt.Fprintf(app.writer, "You caught %s!\n", pokemonName)
