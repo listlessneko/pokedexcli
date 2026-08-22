@@ -1,10 +1,13 @@
 package main
 
+import "math/rand"
+
 const (
-	pokeball  = "Poke Ball"
-	greatball = "Great Ball"
-	ultraball = "Ultra Ball"
-	catchBack = "[Back]"
+	maxCatchRoll = 256
+	pokeball     = "Poke Ball"
+	greatball    = "Great Ball"
+	ultraball    = "Ultra Ball"
+	catchBack    = "[Back]"
 )
 
 var pokeballs = []string{
@@ -36,5 +39,5 @@ func trueCaptureRate(captureRate int) int {
 }
 
 func isCaptured(captureRate int) bool {
-	return false
+	return rand.Intn(maxCatchRoll) <= captureRate
 }
