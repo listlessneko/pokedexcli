@@ -239,9 +239,6 @@ func commandCatch(app *appState) error {
 		return err
 	}
 
-	speciesLogger := logger.BranchGroup("species").Branch("name", species.Name, "capture_rate", species.CaptureRate)
-	speciesLogger.Bark("species")
-
 	pokemonName := capitalize(species.Name)
 	captureRate := species.CaptureRate
 
@@ -254,14 +251,12 @@ func commandCatch(app *appState) error {
 		return nil
 	}
 
-	captureRate = captureRateByPokeball(captureRate, selectedPokeball)
-	captureRate = trueCaptureRate(captureRate)
-
 	fmt.Fprintf(app.writer, "You throw a %s at %s...\n", selectedPokeball, pokemonName)
 
-	catchLogger := logger.BranchGroup("catch").Branch("pokemon", species.Name, "capture_rate", species.CaptureRate, "pokeball", selectedPokeball, "true_capture_rate", captureRate)
+	catchLogger := logger.BranchGroup("catch").Branch("pokemon", species.Name, "captureRate", captureRate, "pokeball", selectedPokeball)
+	captured, catchLogger := isCaptured(catchLogger, captureRate, selectedPokeball)
 
-	if !isCaptured(captureRate) {
+	if !captured {
 		catchLogger.Bark("ran away...")
 		fmt.Fprintf(app.writer, "%s ran away...\n", pokemonName)
 	} else {
@@ -269,7 +264,7 @@ func commandCatch(app *appState) error {
 		// TODO: Might not be needed when battle system is implemented since the battle system should already know this.
 		// Maybe already stored in appState
 		pokemon, err := getPokemon(app)
-		if  err != nil {
+		if err != nil {
 			return err
 		}
 		app.config.Caught[pokemon.Name] = pokemon

@@ -1,6 +1,9 @@
 package main
 
-import "math/rand"
+import (
+	"github.com/listlessneko/pokedexcli/timber"
+	"math/rand"
+)
 
 const (
 	maxCatchRoll = 256
@@ -17,27 +20,34 @@ var pokeballs = []string{
 	catchBack,
 }
 
-func captureRateByPokeball(captureRate int, selected string) int {
+func captureRateByPokeball(selected string) float64 {
+	modifier := float64(1)
 	switch selected {
 	case pokeball:
 	case greatball:
-		captureRate = int(float64(captureRate) * 1.5)
+		modifier = 1.5
 	case ultraball:
-		captureRate = int(float64(captureRate) * 2)
+		modifier = 2
 	default:
 	}
-	return captureRate
+	return modifier
 }
 
-func trueCaptureRate(captureRate int) int {
+func trueCaptureRate(logger *timber.Logger, captureRate int, selected string) (int, *timber.Logger) {
+	pokeballModifier := captureRateByPokeball(selected)
+	captureRateModifiedByPokeball := int(float64(captureRate) * pokeballModifier)
+	logger = logger.Branch("pokeballModifier", pokeballModifier, "captureRateModifiedByPokeball", captureRateModifiedByPokeball)
 	// TODO: introduce dynamic, random stats
 	// hp stubs
 	scaledMaxHP := 100 * 3
 	scaledCurrentHP := 100 * 2
-	x := ((scaledMaxHP - scaledCurrentHP) * captureRate) / scaledMaxHP
-	return x
+	x := ((scaledMaxHP - scaledCurrentHP) * captureRateModifiedByPokeball) / scaledMaxHP
+	return x, logger
 }
 
-func isCaptured(captureRate int) bool {
-	return rand.Intn(maxCatchRoll) <= captureRate
+func isCaptured(logger *timber.Logger, captureRate int, selected string) (bool, *timber.Logger) {
+	captureRate, logger = trueCaptureRate(logger, captureRate, selected)
+	roll := rand.Intn(maxCatchRoll)
+	logger = logger.Branch("finalCaptureRate", captureRate, "roll", roll)
+	return roll <= captureRate, logger
 }
