@@ -25,3 +25,16 @@ func captureRateByPokeball(captureRate int, selected string) int {
 	}
 	return captureRate
 }
+
+func trueCaptureRate(captureRate int) int {
+	// TODO: introduce dynamic, random stats
+	// hp stubs
+	scaledMaxHP := 100 * 3
+	scaledCurrentHP := 100 * 2
+	x := ((scaledMaxHP - scaledCurrentHP) * captureRate) / scaledMaxHP
+	return x
+}
+
+func isCaptured(captureRate int) bool {
+	return false
+}
