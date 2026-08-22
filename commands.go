@@ -284,18 +284,17 @@ func commandCatch(app *appState) error {
 	captureRate = trueCaptureRate(captureRate)
 
 	fmt.Fprintf(app.writer, "You throw a %s at %s...\n", selectedPokeball, pokemonName)
-	randomInt := rand.Intn(256)
 
-	catchLogger := logger.BranchGroup("catch").Branch("pokemon", pokemon.Name, "capture_rate", species.CaptureRate, "pokeball", selectedPokeball, "true_capture_rate", captureRate, "randomInt", randomInt)
+	catchLogger := logger.BranchGroup("catch").Branch("pokemon", pokemon.Name, "capture_rate", species.CaptureRate, "pokeball", selectedPokeball, "true_capture_rate", captureRate)
 
-	if randomInt <= captureRate {
+	if !isCaptured(captureRate) {
+		catchLogger.Bark("ran away...")
+		fmt.Fprintf(app.writer, "%s ran away...\n", pokemonName)
+	} else {
 		catchLogger.Bark("caught!")
 		app.config.Caught[pokemon.Name] = pokemon
 		fmt.Fprintf(app.writer, "You caught %s!\n", pokemonName)
 		fmt.Fprintln(app.writer, "You can view more information about this Pokemon with the inspect command.")
-	} else {
-		catchLogger.Bark("ran away...")
-		fmt.Fprintf(app.writer, "%s ran away...\n", pokemonName)
 	}
 	return nil
 }
